@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Committee Dashboard | CaseBridge Institutional Review{% endblock %}
+
+{% block content %}
+<div class="container" style="margin: 1.5rem auto 3.5rem;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+        Staff Investigation Portal
+      </span>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.35rem 0 0.25rem;">
+        Case Management Dashboard
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); margin: 0;">
+        Authenticated as <strong>{{ session.get('user_name') }}</strong> ({{ session.get('user_role') }}) • {{ session.get('department') }}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('committee.cases') }}" class="btn btn-primary btn-sm">
+        View Complete Queue →
+      </a>
+      {% if session.get('user_role') == 'SYSTEM_ADMIN' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-dark btn-sm">
+          ⚙ Administration Console
+        </a>
+      {% endif %}
+      <a href="{{ url_for('committee.logout') }}" class="btn btn-secondary btn-sm">
+        Sign Out
+      </a>
+    </div>
+  </div>
+
+  <!-- Overdue Banner Alert if any SLA breaches exist -->
+  {% if count_overdue > 0 %}
+    <aside class="alert alert-danger" role="alert" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <span style="font-size: 1.25rem;">⚠</span>
+        <div>
+          <strong>SLA Escalation Alert:</strong> There are currently <strong>{{ count_overdue }}</strong> unresolved case(s) past institutional deadline.
+        </div>
+      </div>
+      <a href="{{ url_for('committee.cases', status='In Review') }}" class="btn btn-danger btn-sm" style="background: var(--cb-red-text); color: white; border: none;">
+        Review Overdue Cases
+      </a>
+    </aside>
+  {% endif %}
+
+  <!-- 6 Simple Metric Cards: Received, Assigned, In Review, Action Required, Overdue, Resolved -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <!-- 1. Received -->
+    <div class="card" style="border-top: 4px solid var(--cb-blue);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Received</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.25rem 0;">{{ count_received }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Awaiting initial triage</div>
+    </div>
+
+    <!-- 2. Assigned -->
+    <div class="card" style="border-top: 4px solid #6366f1;">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Assigned</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: #4f46e5; margin: 0.25rem 0;">{{ count_assigned }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Delegated to officer</div>
+    </div>
+
+    <!-- 3. In Review -->
+    <div class="card" style="border-top: 4px solid #3b82f6;">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">In Review</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: #2563eb; margin: 0.25rem 0;">{{ count_in_review }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Active investigation</div>
+    </div>
+
+    <!-- 4. Action Required -->
+    <div class="card" style="border-top: 4px solid var(--cb-amber);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Action Req.</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-amber-text); margin: 0.25rem 0;">{{ count_action_req }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Pending evidence/reply</div>
+    </div>
+
+    <!-- 5. Overdue -->
+    <div class="card" style="border-top: 4px solid {{ 'var(--cb-red-text)' if count_overdue > 0 else 'var(--cb-gray-300)' }}; background: {{ '#fff5f5' if count_overdue > 0 else 'var(--cb-white)' }};">
+      <div style="font-size: 0.75rem; color: {{ 'var(--cb-red-text)' if count_overdue > 0 else 'var(--cb-gray-500)' }}; text-transform: uppercase; font-weight: 700;">Overdue</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: {{ 'var(--cb-red-text)' if count_overdue > 0 else 'var(--cb-gray-400)' }}; margin: 0.25rem 0;">{{ count_overdue }}</div>
+      <div style="font-size: 0.75rem; color: {{ 'var(--cb-red-text)' if count_overdue > 0 else 'var(--cb-gray-500)' }};">Past SLA deadline</div>
+    </div>
+
+    <!-- 6. Resolved -->
+    <div class="card" style="border-top: 4px solid var(--cb-green-text);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Resolved</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-green-text); margin: 0.25rem 0;">{{ count_resolved }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Concluded findings</div>
+    </div>
+  </div>
+
+  <!-- My Assigned Cases Section (if assigned to current officer) -->
+  {% if my_cases %}
+    <div class="card" style="margin-bottom: 2rem; border-left: 4px solid #6366f1;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <h2 style="font-size: 1.1rem; color: var(--cb-navy); margin: 0;">My Active Assignments ({{ my_cases|length }})</h2>
+        <span style="font-size: 0.75rem; color: var(--cb-gray-500);">Cases assigned to you for investigation</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+              <th style="padding: 0.5rem;">Subject / Case</th>
+              <th style="padding: 0.5rem;">Category</th>
+              <th style="padding: 0.5rem;">Priority</th>
+              <th style="padding: 0.5rem;">Status</th>
+              <th style="padding: 0.5rem;">SLA Due</th>
+              <th style="padding: 0.5rem; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in my_cases %}
+              <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+                <td style="padding: 0.6rem 0.5rem;">
+                  <strong style="color: var(--cb-navy);">{{ c.subject }}</strong>
+                  <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Case #{{ c.id }} • Logged {{ c.created_at.strftime('%b %d, %Y') }}</div>
+                </td>
+                <td style="padding: 0.5rem;">{{ c.category.name if c.category else 'General' }}</td>
+                <td style="padding: 0.5rem;">
+                  <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.75rem;">{{ c.priority.value }}</span>
+                </td>
+                <td style="padding: 0.5rem;">
+                  <span class="badge badge-{{ c.status.value.lower().replace(' ', '-') }}">{{ c.status.value }}</span>
+                </td>
+                <td style="padding: 0.5rem; color: {{ 'var(--cb-red)' if c.is_overdue else 'var(--cb-gray-600)' }};">
+                  {{ c.deadline_at.strftime('%b %d, %Y') if c.deadline_at else '-' }}
+                  {% if c.is_overdue %}<span style="color: var(--cb-red); font-weight: bold; font-size: 0.75rem;">(OVERDUE)</span>{% endif %}
+                </td>
+                <td style="padding: 0.5rem; text-align: right;">
+                  <a href="{{ url_for('committee.case_detail', case_id=c.id) }}" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                    Manage
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Recent Intake Queue Table beneath summary cards -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin: 0;">Recent Intake Queue</h2>
+        <p style="font-size: 0.75rem; color: var(--cb-gray-500); margin: 0;">Notice: Complainant identity is not collected and therefore never displayed.</p>
+      </div>
+      <a href="{{ url_for('committee.cases') }}" style="font-size: 0.8rem; color: var(--cb-blue); font-weight: 600;">
+        Open Filterable Queue →
+      </a>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+            <th style="padding: 0.5rem;">Case / Subject</th>
+            <th style="padding: 0.5rem;">Category</th>
+            <th style="padding: 0.5rem;">Priority</th>
+            <th style="padding: 0.5rem;">Status</th>
+            <th style="padding: 0.5rem;">Assigned</th>
+            <th style="padding: 0.5rem;">Created</th>
+            <th style="padding: 0.5rem;">Deadline</th>
+            <th style="padding: 0.5rem; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cases[:12] %}
+            <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+              <td style="padding: 0.65rem 0.5rem;">
+                <div style="font-weight: 600; color: var(--cb-navy);">{{ c.subject }}</div>
+                <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Case #{{ c.id }}</div>
+              </td>
+              <td style="padding: 0.5rem;">{{ c.category.name if c.category else 'General' }}</td>
+              <td style="padding: 0.5rem;">
+                <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.75rem;">{{ c.priority.value }}</span>
+              </td>
+              <td style="padding: 0.5rem;">
+                <span class="badge badge-{{ c.status.value.lower().replace(' ', '-') }}">{{ c.status.value }}</span>
+                {% if c.is_overdue %}
+                  <span class="badge badge-danger" style="font-size: 0.65rem;">Overdue</span>
+                {% endif %}
+              </td>
+              <td style="padding: 0.5rem; color: var(--cb-gray-700);">
+                {% if c.assigned_to %}
+                  {{ c.assigned_to.full_name }}
+                {% else %}
+                  <span style="color: var(--cb-gray-400); font-style: italic;">Unassigned</span>
+                {% endif %}
+              </td>
+              <td style="padding: 0.5rem; color: var(--cb-gray-500); font-size: 0.8rem;">
+                {{ c.created_at.strftime('%b %d, %Y') }}
+              </td>
+              <td style="padding: 0.5rem; color: {{ 'var(--cb-red)' if c.is_overdue else 'var(--cb-gray-600)' }}; font-size: 0.8rem;">
+                {{ c.deadline_at.strftime('%b %d, %Y') if c.deadline_at else '-' }}
+              </td>
+              <td style="padding: 0.5rem; text-align: right;">
+                <a href="{{ url_for('committee.case_detail', case_id=c.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                  Open
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+
+          {% if not cases %}
+            <tr>
+              <td colspan="8" style="padding: 2.5rem; text-align: center; color: var(--cb-gray-500);">
+                No complaints recorded yet. Use the <a href="{{ url_for('public.submit') }}">public intake form</a> to submit test cases.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

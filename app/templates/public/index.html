@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}CaseBridge | Anonymous University Case Reporting & Grievance Review{% endblock %}
+{% block meta_description %}CaseBridge enables university students and staff to submit sensitive grievances anonymously, track resolution progress securely, and communicate without fear of retaliation.{% endblock %}
+
+{% block content %}
+<!-- Hero Section: Clean, uncluttered, focused -->
+<section style="text-align: center; max-width: 780px; margin: 2rem auto 3.5rem;" aria-labelledby="hero-heading">
+  <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe; margin-bottom: 1rem; font-size: 0.8rem; font-weight: 600;">
+    Independent Campus Ethics & Grievance Portal
+  </span>
+
+  <h1 id="hero-heading" style="font-size: 2.6rem; font-weight: 800; color: var(--cb-navy); line-height: 1.2; margin-bottom: 1.25rem;">
+    Report Campus Concerns Safely. No Personal Identifiers Required.
+  </h1>
+
+  <p style="font-size: 1.1rem; color: var(--cb-gray-600); line-height: 1.6; margin-bottom: 2rem; max-width: 680px; margin-left: auto; margin-right: auto;">
+    CaseBridge provides students, researchers, and staff an independent channel to report harassment, discrimination, unfair grading, or administrative abuse without submitting your name, matriculation ID, or personal email.
+  </p>
+
+  <!-- Primary Call to Actions -->
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ url_for('public.submit') }}" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1rem;" aria-label="Start an anonymous case submission">
+      Submit a Case
+    </a>
+    <a href="{{ url_for('public.track') }}" class="btn btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1rem;" aria-label="Track an existing case with a code">
+      Track a Case
+    </a>
+  </div>
+
+  <!-- Direct Quick-Tracking Bar -->
+  <div class="card" style="margin-top: 2.5rem; text-align: left; background: var(--cb-white); border: 1px solid var(--cb-gray-300);">
+    <label for="quick_track_code" class="form-label" style="margin-bottom: 0.5rem; font-size: 0.85rem;">
+      Already submitted? Check case status or read committee updates:
+    </label>
+    <form action="{{ url_for('public.track') }}" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <input
+        type="text"
+        id="quick_track_code"
+        name="code"
+        class="form-control tracking-code-input"
+        placeholder="e.g. CB-9K2M-4F8X-7R3A"
+        required
+        aria-describedby="quick-track-help"
+        style="flex: 1; min-width: 240px; font-family: var(--cb-font-mono); font-weight: 700; text-transform: uppercase;"
+      >
+      <button type="submit" class="btn btn-dark" style="white-space: nowrap; padding: 0.65rem 1.25rem;">
+        Track Case
+      </button>
+    </form>
+    <div id="quick-track-help" class="form-text" style="color: var(--cb-gray-500); font-size: 0.75rem; margin-top: 0.4rem;">
+      Tracking codes are 16-character keys displayed once upon submission. CaseBridge stores only an irreversible SHA-256 hash.
+    </div>
+  </div>
+</section>
+
+<!-- Plain-Language Privacy Notice & Emergency Warning -->
+<section style="margin-bottom: 3.5rem;" aria-label="Privacy and Emergency Boundary">
+  <div class="card" style="background: var(--cb-gray-100); border-left: 4px solid var(--cb-blue);">
+    <div style="display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 280px;">
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+          How We Protect Your Identity
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+          The system does not intentionally require direct identity information for anonymous submissions. We do not ask for your name, student registration number, personal phone, or email address. We also actively avoid persisting client IP addresses in complaint records.
+        </p>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); margin: 0;">
+          <em>Note on network reality:</em> While our software does not store identity details, internet service providers and campus Wi-Fi networks log transport packets. If your threat model requires network-level detachment, access this site over a private mobile connection or Tor. Learn more on our <a href="{{ url_for('public.privacy') }}" style="color: var(--cb-blue); font-weight: 600;">Privacy Boundary</a> page.
+        </p>
+      </div>
+
+      <div style="flex: 1; min-width: 280px; background: var(--cb-white); padding: 1.25rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+          <span style="color: var(--cb-amber); font-weight: bold;">⚠</span> Important Safety Warning
+        </h3>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.5; margin-bottom: 0.75rem;">
+          CaseBridge is an asynchronous case review service and is not monitored 24/7 for immediate physical dispatch. If you or someone else is in immediate physical danger, call Campus Security at <strong>{{ emergency_phone }}</strong> or emergency emergency services (911).
+        </p>
+        <div style="display: flex; gap: 0.5rem; font-size: 0.75rem;">
+          <a href="{{ url_for('public.faq') }}" style="color: var(--cb-blue); font-weight: 600;">Read Emergency FAQ →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How the Process Works: 4 Sequential Steps -->
+<section style="margin-bottom: 3.5rem;" aria-labelledby="workflow-overview-heading">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h2 id="workflow-overview-heading" style="font-size: 1.6rem; color: var(--cb-navy);">
+      How CaseBridge Works
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-600);">
+      A clear, predictable four-stage journey from intake to independent committee resolution.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+    <!-- Step 1 -->
+    <div class="card">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--cb-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        1
+      </div>
+      <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.4rem;">Submit Anonymously</h3>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5;">
+        Describe what occurred factually under one of the 8 approved institutional categories. Attach supporting evidence if safe.
+      </p>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--cb-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        2
+      </div>
+      <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.4rem;">Save Your Tracking Code</h3>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5;">
+        Receive a high-entropy 16-character code (<code>CB-XXXX-XXXX-XXXX</code>). Store it carefully—it is your only key to return.
+      </p>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--cb-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        3
+      </div>
+      <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.4rem;">Two-Way Dialogue</h3>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5;">
+        The independent committee reviews narratives and can post clarifying questions. Reply anonymously at any time.
+      </p>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="card">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--cb-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        4
+      </div>
+      <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.4rem;">Resolution & Audit</h3>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5;">
+        Track workflow milestones from In Review to Resolved. Every transition is recorded in an immutable technical audit trail.
+      </p>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 1.5rem;">
+    <a href="{{ url_for('public.how_it_works') }}" class="btn btn-secondary btn-sm">
+      Read Complete Workflow Details →
+    </a>
+  </div>
+</section>
+
+<!-- Reportable Scopes / Categories -->
+<section style="margin-bottom: 3.5rem; background: var(--cb-white); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-lg); padding: 2rem;" aria-labelledby="categories-heading">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div>
+      <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--cb-blue); letter-spacing: 0.05em;">Intake Scopes</span>
+      <h2 id="categories-heading" style="font-size: 1.4rem; color: var(--cb-navy); margin-top: 0.2rem;">
+        Approved Grievance Categories & SLAs
+      </h2>
+    </div>
+    <a href="{{ url_for('public.submit') }}" class="btn btn-primary btn-sm">
+      Start a Report →
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem;">
+    {% for cat in categories %}
+      <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <strong style="font-size: 0.9rem; color: var(--cb-navy);">{{ cat.name }}</strong>
+          <span class="badge" style="background: var(--cb-white); color: var(--cb-gray-600); border-color: var(--cb-gray-300); font-family: var(--cb-font-mono); font-size: 0.65rem;">
+            SLA: {{ cat.sla_days }}d
+          </span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.4; margin: 0;">
+          {{ cat.description }}
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Trust, Consortium & Governance Link Grid -->
+<section style="margin-bottom: 2rem;">
+  <div style="text-align: center; margin-bottom: 1.5rem;">
+    <h2 style="font-size: 1.35rem; color: var(--cb-navy);">Explore Trust & Institutional Governance</h2>
+    <p style="font-size: 0.85rem; color: var(--cb-gray-600);">Detailed documentation covering architecture, rights, and standards.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    <a href="{{ url_for('public.about') }}" class="card" style="text-decoration: none; display: block; border-top: 3px solid var(--cb-navy);">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.3rem;">About & ARK Ecosystem</h3>
+      <p style="font-size: 0.8rem; color: var(--cb-gray-600); margin: 0; line-height: 1.4;">
+        Learn how CaseBridge fits within the broader ARK Ecosystem governance framework.
+      </p>
+    </a>
+
+    <a href="{{ url_for('public.privacy') }}" class="card" style="text-decoration: none; display: block; border-top: 3px solid var(--cb-blue);">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.3rem;">Privacy Boundary</h3>
+      <p style="font-size: 0.8rem; color: var(--cb-gray-600); margin: 0; line-height: 1.4;">
+        Transparent breakdown of data we deliberately avoid collecting.
+      </p>
+    </a>
+
+    <a href="{{ url_for('public.security') }}" class="card" style="text-decoration: none; display: block; border-top: 3px solid var(--cb-navy);">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.3rem;">Security & Cryptography</h3>
+      <p style="font-size: 0.8rem; color: var(--cb-gray-600); margin: 0; line-height: 1.4;">
+        SHA-256 peppered hashing, AES-256 field encryption, and ASVS Level 2 alignment.
+      </p>
+    </a>
+
+    <a href="{{ url_for('public.faq') }}" class="card" style="text-decoration: none; display: block; border-top: 3px solid #10b981;">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.3rem;">Frequently Asked Questions</h3>
+      <p style="font-size: 0.8rem; color: var(--cb-gray-600); margin: 0; line-height: 1.4;">
+        Answers regarding lost codes, investigation stages, and whistleblowing safeguards.
+      </p>
+    </a>
+  </div>
+</section>
+{% endblock %}

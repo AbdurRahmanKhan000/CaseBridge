@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Committee & Staff Portal Login | CaseBridge{% endblock %}
+{% block content %}
+<div class="container-sm" style="max-width: 500px; margin: 2rem auto;">
+  <div class="card" style="border-top: 4px solid var(--cb-navy);">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue);">FR-05 Staff Authentication</span>
+      <h1 style="font-size: 1.5rem; color: var(--cb-navy); margin-top: 0.5rem;">Institutional Case Portal</h1>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600);">
+        Restricted to authorized Ethics & Grievance Committee members.
+      </p>
+    </div>
+
+    <form action="{{ url_for('committee.login') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="email" class="form-label">Institutional Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-control"
+          placeholder="officer@university.edu"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          placeholder="••••••••••••"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.65rem; margin-top: 0.5rem;">
+        Sign In to Portal
+      </button>
+    </form>
+
+    <!-- Demo Role Fast-Switcher for Reviewers -->
+    <div style="margin-top: 2rem; border-top: 1px solid var(--cb-gray-200); padding-top: 1.25rem;">
+      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--cb-gray-500); margin-bottom: 0.75rem; text-align: center;">
+        Quick Test Accounts (Stage 1 Architecture)
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        {% for u in demo_users %}
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            style="display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 0.5rem 0.75rem;"
+            onclick="document.getElementById('email').value='{{ u.email }}'; document.getElementById('password').value='password123';"
+          >
+            <div>
+              <strong style="color: var(--cb-navy); font-size: 0.8rem;">{{ u.full_name }}</strong>
+              <div style="font-size: 0.7rem; color: var(--cb-gray-500);">{{ u.role.value }} • {{ u.department }}</div>
+            </div>
+            <span style="font-size: 0.7rem; background: var(--cb-gray-200); padding: 0.2rem 0.4rem; border-radius: var(--cb-radius-sm);">Use</span>
+          </button>
+        {% endfor %}
+      </div>
+      <div style="font-size: 0.7rem; color: var(--cb-gray-500); text-align: center; margin-top: 0.75rem;">
+        Default demo password: <code>password123</code> (Bcrypt/Scrypt hash tested)
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

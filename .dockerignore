@@ -1,0 +1,32 @@
+# Git & Version Control
+.git
+.gitignore
+
+# Environment & Secrets (Never bake into image)
+.env*
+!.env.example
+
+# Python cache & compiled bytecode
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache
+.coverage
+htmlcov
+
+# Node & Frontend Build Artifacts
+node_modules
+dist
+build
+.DS_Store
+
+# Local Database & Upload Artifacts
+instance/*.db
+instance/protected_uploads/*
+!instance/protected_uploads/.gitkeep
+mysql_data
+
+# Documentation & Development Assets
+docs/
+tests/

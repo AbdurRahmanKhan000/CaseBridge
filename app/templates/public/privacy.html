@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Boundary & Whistleblower Protection | CaseBridge{% endblock %}
+{% block meta_description %}Read CaseBridge's transparent privacy architecture. We deliberately do not store names, student IDs, emails, phone numbers, or IP addresses for anonymous grievance submissions.{% endblock %}
+
+{% block content %}
+<div class="container-md" style="margin: 1.5rem auto 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2.5rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Data Boundary & Ethics
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.75rem;">
+      Privacy Boundary & Data Collection Policy
+    </h1>
+    <p style="font-size: 1rem; color: var(--cb-gray-600); max-width: 650px; margin: 0 auto;">
+      A plain-language, transparent commitment detailing what we build, what we never collect, and how to protect yourself.
+    </p>
+  </div>
+
+  <!-- Clear Core Statement -->
+  <div class="card" style="margin-bottom: 1.75rem; border-left: 4px solid var(--cb-blue);">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      Our Foundational Privacy Commitment
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      CaseBridge does not intentionally require, collect, or persist direct identity information for anonymous submissions. Our database schemas and server logic are architected to eliminate unnecessary identity collection from the ground up.
+    </p>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+      When you submit a grievance, your report is identified solely by an unpredictable, high-entropy tracking key. The system records your narrative and chosen category—not your personal dossier.
+    </p>
+  </div>
+
+  <!-- What We Do NOT Collect -->
+  <div class="card" style="margin-bottom: 1.75rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 1rem;">
+      Information We Never Collect or Store in Complaint Records
+    </h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+      <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <strong style="color: var(--cb-navy); font-size: 0.9rem; display: block; margin-bottom: 0.35rem;">
+          ❌ No Names or Student IDs
+        </strong>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+          The intake form contains no fields for your full name, matriculation ID, social security, or passport numbers.
+        </p>
+      </div>
+
+      <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <strong style="color: var(--cb-navy); font-size: 0.9rem; display: block; margin-bottom: 0.35rem;">
+          ❌ No Email or Phone Numbers
+        </strong>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+          We do not ask for or store contact details. Communication takes place strictly through the anonymous tracking portal.
+        </p>
+      </div>
+
+      <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <strong style="color: var(--cb-navy); font-size: 0.9rem; display: block; margin-bottom: 0.35rem;">
+          ❌ No Client IP Address Logging
+        </strong>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+          The database schema omits client IP fields, and server logging filters strip network identifiers before persisting log lines.
+        </p>
+      </div>
+
+      <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <strong style="color: var(--cb-navy); font-size: 0.9rem; display: block; margin-bottom: 0.35rem;">
+          ❌ No Third-Party Trackers or Ad Pixels
+        </strong>
+        <p style="font-size: 0.8rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+          Zero third-party trackers, analytics scripts, social widgets, or advertising telemetry are loaded on any CaseBridge page.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Realistic Boundary Notice (Do not claim absolute anonymity) -->
+  <div class="card" style="background: #fffbeb; border: 1px solid #fde68a; margin-bottom: 1.75rem;">
+    <h2 style="font-size: 1.15rem; color: #92400e; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>⚠</span> A Candid Note on Network Reality & Anonymity Limits
+    </h2>
+    <p style="font-size: 0.85rem; color: #78350f; line-height: 1.6; margin-bottom: 0.75rem;">
+      No responsible engineering team can claim "100% absolute untraceability" across the internet. While CaseBridge does not store your identity, internet service providers (ISPs), campus Wi-Fi access points, and upstream network proxies maintain routing logs outside the software’s perimeter.
+    </p>
+    <p style="font-size: 0.85rem; color: #78350f; line-height: 1.6; margin: 0;">
+      If you are in a high-threat situation where campus network traffic might be monitored by an adversarial actor, we strongly recommend accessing CaseBridge using a personal mobile hotspot, an off-campus public Wi-Fi network, or the Tor Browser.
+    </p>
+  </div>
+
+  <!-- Best Practices for Complainants -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      How to Preserve Your Anonymity in Narrative Details
+    </h2>
+    <ul style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; padding-left: 1.25rem;">
+      <li style="margin-bottom: 0.5rem;">
+        <strong>Avoid Unique Identifying Facts:</strong> Be careful not to describe facts that only one person could know (e.g. "as the only international student in the 8:00 AM laboratory section").
+      </li>
+      <li style="margin-bottom: 0.5rem;">
+        <strong>Sanitize Screenshots & Attachments:</strong> When uploading PDF or image files, inspect them to ensure your personal email address, institutional login username, or phone number does not appear in window titles or document headers.
+      </li>
+      <li>
+        <strong>Keep Your Tracking Code Secure:</strong> Do not share your tracking code with others. Anyone with access to that code can view committee responses and message history.
+      </li>
+    </ul>
+  </div>
+
+  <!-- Internal Links -->
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ url_for('public.submit') }}" class="btn btn-primary">
+      Submit a Case Now
+    </a>
+    <a href="{{ url_for('public.security') }}" class="btn btn-secondary">
+      Review Security Architecture
+    </a>
+    <a href="{{ url_for('public.faq') }}" class="btn btn-secondary">
+      Read Frequently Asked Questions
+    </a>
+  </div>
+</div>
+{% endblock %}

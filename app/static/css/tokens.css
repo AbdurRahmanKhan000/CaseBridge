@@ -1,0 +1,63 @@
+/* ==============================================================================
+   CaseBridge Design Tokens & CSS Variables
+   Calm, trustworthy, professional, high-accessibility (WCAG 2.2 AA)
+   ============================================================================== */
+
+:root {
+  /* Color Tokens */
+  --cb-navy: #0f172a;        /* Primary deep navy */
+  --cb-navy-dark: #0b1120;
+  --cb-blue: #1d4ed8;        /* Secondary clean blue */
+  --cb-blue-hover: #1e40af;
+  --cb-blue-light: #eff6ff;
+
+  --cb-white: #ffffff;
+  --cb-gray-50: #f8fafc;     /* Background very light gray */
+  --cb-gray-100: #f1f5f9;
+  --cb-gray-200: #e2e8f0;    /* Default borders */
+  --cb-gray-300: #cbd5e1;
+  --cb-gray-400: #94a3b8;
+  --cb-gray-500: #64748b;
+  --cb-gray-600: #475569;
+  --cb-gray-700: #334155;
+  --cb-gray-800: #1e293b;
+  --cb-gray-900: #0f172a;
+
+  /* State Colors */
+  --cb-green-bg: #ecfdf5;
+  --cb-green-text: #065f46;
+  --cb-green-border: #a7f3d0;
+
+  --cb-amber-bg: #fffbeb;
+  --cb-amber-text: #92400e;
+  --cb-amber-border: #fde68a;
+
+  --cb-red-bg: #fef2f2;
+  --cb-red-text: #991b1b;
+  --cb-red-border: #fecaca;
+
+  /* Typography Stack - System fast loading, zero external font downloads */
+  --cb-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --cb-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Border Radii */
+  --cb-radius-sm: 4px;
+  --cb-radius-md: 8px;
+  --cb-radius-lg: 12px;
+  --cb-radius-full: 9999px;
+
+  /* Subtle Shadows */
+  --cb-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --cb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+
+  /* Spacing */
+  --cb-space-xs: 0.25rem;
+  --cb-space-sm: 0.5rem;
+  --cb-space-md: 1rem;
+  --cb-space-lg: 1.5rem;
+  --cb-space-xl: 2rem;
+  --cb-space-2xl: 3rem;
+
+  /* Transitions */
+  --cb-transition: 180ms ease-in-out;
+}

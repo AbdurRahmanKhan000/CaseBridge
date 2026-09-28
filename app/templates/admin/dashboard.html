@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration Console | CaseBridge{% endblock %}
+
+{% block content %}
+<div class="container" style="margin: 1.5rem auto 3.5rem;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge" style="background: #fef2f2; color: var(--cb-red-text); border-color: #fecaca;">
+        System Administrator Scope
+      </span>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.35rem 0 0.25rem;">
+        Institutional Administration Console
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); margin: 0;">
+        Manage committee officers, grievance categories, resolution SLAs, and inspect technical audit trails.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('committee.dashboard') }}" class="btn btn-secondary btn-sm">
+        ← Committee Dashboard
+      </a>
+      <a href="{{ url_for('admin.audits') }}" class="btn btn-dark btn-sm">
+        Inspect Full Audit Journal
+      </a>
+      <a href="{{ url_for('committee.logout') }}" class="btn btn-secondary btn-sm">
+        Sign Out
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="border-top: 4px solid var(--cb-navy);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Total Grievances</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.25rem 0;">{{ total_cases }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">All lifetime cases</div>
+    </div>
+
+    <div class="card" style="border-top: 4px solid var(--cb-blue);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Active Officers</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-blue); margin: 0.25rem 0;">{{ active_users }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Out of {{ users|length }} accounts</div>
+    </div>
+
+    <div class="card" style="border-top: 4px solid #6366f1;">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">Intake Categories</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: #4f46e5; margin: 0.25rem 0;">{{ categories|length }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Approved institutional scopes</div>
+    </div>
+
+    <div class="card" style="border-top: 4px solid var(--cb-green-text);">
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-transform: uppercase; font-weight: 700;">System Settings</div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--cb-green-text); margin: 0.25rem 0;">{{ settings|length }}</div>
+      <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Active institutional policies</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: USER MANAGEMENT -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 style="font-size: 1.2rem; color: var(--cb-navy); margin: 0;">Authorized Staff & Officer Accounts</h2>
+        <p style="font-size: 0.75rem; color: var(--cb-gray-500); margin: 0;">Strictly institutional staff. Anonymous student complainants never have user records.</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="toggleForm('addUserForm');">
+        + Add New Staff Member
+      </button>
+    </div>
+
+    <!-- Hidden Add User Form -->
+    <div id="addUserForm" style="display: none; background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.75rem;">Create New Staff Account</h3>
+      <form action="{{ url_for('admin.create_user') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div>
+            <label for="new_name" class="form-label" style="font-size: 0.75rem;">Full Name *</label>
+            <input type="text" name="full_name" id="new_name" class="form-control" placeholder="Dr. Jane Doe" required style="font-size: 0.85rem;">
+          </div>
+          <div>
+            <label for="new_email" class="form-label" style="font-size: 0.75rem;">Institutional Email *</label>
+            <input type="email" name="email" id="new_email" class="form-control" placeholder="jane.doe@university.edu" required style="font-size: 0.85rem;">
+          </div>
+          <div>
+            <label for="new_department" class="form-label" style="font-size: 0.75rem;">Department</label>
+            <input type="text" name="department" id="new_department" class="form-control" placeholder="Student Welfare / Academic Affairs" style="font-size: 0.85rem;">
+          </div>
+          <div>
+            <label for="new_role" class="form-label" style="font-size: 0.75rem;">Authorization Role *</label>
+            <select name="role_id" id="new_role" class="form-control" style="font-size: 0.85rem;" required>
+              {% for r in roles %}
+                <option value="{{ r.id }}" {% if r.name == 'COMMITTEE_MEMBER' %}selected{% endif %}>
+                  {{ r.name }} ({{ r.description }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="new_pw" class="form-label" style="font-size: 0.75rem;">Temporary Password *</label>
+            <input type="password" name="password" id="new_pw" class="form-control" placeholder="••••••••••••" required minlength="8" style="font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleForm('addUserForm');">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Create Staff Account</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Users Table -->
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+            <th style="padding: 0.5rem;">Officer / Email</th>
+            <th style="padding: 0.5rem;">Department</th>
+            <th style="padding: 0.5rem;">Assigned Role</th>
+            <th style="padding: 0.5rem;">Status</th>
+            <th style="padding: 0.5rem; text-align: right;">Role Action</th>
+            <th style="padding: 0.5rem; text-align: right;">Status Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+              <td style="padding: 0.6rem 0.5rem;">
+                <strong style="color: var(--cb-navy);">{{ u.full_name }}</strong>
+                <div style="font-size: 0.75rem; color: var(--cb-gray-500);">{{ u.email }}</div>
+              </td>
+              <td style="padding: 0.5rem; color: var(--cb-gray-700);">{{ u.department }}</td>
+              <td style="padding: 0.5rem;">
+                <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.75rem;">
+                  {{ u.role.value if hasattr(u.role, 'value') else u.role.name }}
+                </span>
+              </td>
+              <td style="padding: 0.5rem;">
+                <span class="badge {{ 'badge-success' if u.active else 'badge-danger' }}" style="font-size: 0.7rem;">
+                  {{ 'Active' if u.active else 'Inactive' }}
+                </span>
+              </td>
+              <!-- Change Role Form -->
+              <td style="padding: 0.5rem; text-align: right;">
+                <form action="{{ url_for('admin.change_user_role', user_id=u.id) }}" method="POST" style="display: inline-flex; gap: 0.25rem;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <select name="role_id" style="font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: var(--cb-radius-sm); border: 1px solid var(--cb-gray-300);">
+                    {% for r in roles %}
+                      <option value="{{ r.id }}" {% if u.role_id == r.id %}selected{% endif %}>{{ r.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+                    Update
+                  </button>
+                </form>
+              </td>
+              <!-- Toggle Active Form -->
+              <td style="padding: 0.5rem; text-align: right;">
+                <form action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" method="POST" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn {{ 'btn-secondary' if u.active else 'btn-primary' }} btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                    {{ 'Deactivate' if u.active else 'Activate' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 2: CATEGORY & SLA MANAGEMENT -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 style="font-size: 1.2rem; color: var(--cb-navy); margin: 0;">Grievance Categories & SLA Benchmarks</h2>
+        <p style="font-size: 0.75rem; color: var(--cb-gray-500); margin: 0;">Configure reportable complaint scopes and target resolution deadlines.</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="toggleForm('addCategoryForm');">
+        + Add New Category
+      </button>
+    </div>
+
+    <!-- Hidden Add Category Form -->
+    <div id="addCategoryForm" style="display: none; background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 0.95rem; color: var(--cb-navy); margin-bottom: 0.75rem;">Create Grievance Category</h3>
+      <form action="{{ url_for('admin.create_category') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: grid; grid-template-columns: 2fr 3fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div>
+            <label for="cat_name" class="form-label" style="font-size: 0.75rem;">Category Name *</label>
+            <input type="text" name="name" id="cat_name" class="form-control" placeholder="e.g. Research Ethics Violation" required style="font-size: 0.85rem;">
+          </div>
+          <div>
+            <label for="cat_desc" class="form-label" style="font-size: 0.75rem;">Description *</label>
+            <input type="text" name="description" id="cat_desc" class="form-control" placeholder="Factual scope of complaints covered by this category" required style="font-size: 0.85rem;">
+          </div>
+          <div>
+            <label for="cat_sla" class="form-label" style="font-size: 0.75rem;">SLA (Days) *</label>
+            <input type="number" name="sla_days" id="cat_sla" class="form-control" value="7" min="1" max="90" required style="font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleForm('addCategoryForm');">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Category</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Categories Table -->
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+            <th style="padding: 0.5rem;">Category Scope</th>
+            <th style="padding: 0.5rem;">Description</th>
+            <th style="padding: 0.5rem;">Status</th>
+            <th style="padding: 0.5rem; text-align: right;">SLA Days</th>
+            <th style="padding: 0.5rem; text-align: right;">Toggle State</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+            <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+              <td style="padding: 0.6rem 0.5rem;">
+                <strong style="color: var(--cb-navy);">{{ cat.name }}</strong>
+              </td>
+              <td style="padding: 0.5rem; color: var(--cb-gray-600); font-size: 0.8rem;">
+                {{ cat.description }}
+              </td>
+              <td style="padding: 0.5rem;">
+                <span class="badge {{ 'badge-success' if cat.active else 'badge-secondary' }}" style="font-size: 0.7rem;">
+                  {{ 'Enabled' if cat.active else 'Disabled' }}
+                </span>
+              </td>
+              <!-- Update SLA Form -->
+              <td style="padding: 0.5rem; text-align: right;">
+                <form action="{{ url_for('admin.update_category_sla', cat_id=cat.id) }}" method="POST" style="display: inline-flex; gap: 0.25rem;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="number" name="sla_days" value="{{ cat.sla_days }}" min="1" max="90" style="width: 55px; font-size: 0.8rem; padding: 0.2rem 0.35rem; border-radius: var(--cb-radius-sm); border: 1px solid var(--cb-gray-300);">
+                  <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.4rem; font-size: 0.75rem;">Set</button>
+                </form>
+              </td>
+              <!-- Toggle Active Form -->
+              <td style="padding: 0.5rem; text-align: right;">
+                <form action="{{ url_for('admin.toggle_category', cat_id=cat.id) }}" method="POST" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn {{ 'btn-secondary' if cat.active else 'btn-primary' }} btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                    {{ 'Disable' if cat.active else 'Enable' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 3: SYSTEM SETTINGS -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.2rem; color: var(--cb-navy); margin-bottom: 0.5rem;">Institutional System Parameters</h2>
+    <p style="font-size: 0.75rem; color: var(--cb-gray-500); margin-bottom: 1.25rem;">
+      Essential governance configuration. Modifying parameters immediately updates platform headers and workflow benchmarks.
+    </p>
+
+    <form action="{{ url_for('admin.update_settings') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+        {% for s in settings %}
+          <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem;">
+            <label for="setting_{{ s.setting_key }}" class="form-label" style="font-size: 0.75rem; font-family: var(--cb-font-mono); color: var(--cb-navy);">
+              {{ s.setting_key }}
+            </label>
+            <input
+              type="text"
+              name="setting_{{ s.setting_key }}"
+              id="setting_{{ s.setting_key }}"
+              value="{{ s.setting_value }}"
+              class="form-control"
+              style="font-size: 0.85rem;"
+            >
+            <div class="form-text" style="font-size: 0.75rem; color: var(--cb-gray-500); margin-top: 0.25rem;">
+              {{ s.description }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div style="text-align: right;">
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.6rem 1.25rem;">
+          Save Institutional Settings
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SECTION 4: TECHNICAL AUDIT STREAM PREVIEW -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 style="font-size: 1.2rem; color: var(--cb-navy); margin: 0;">Immutable Technical Audit Journal (FR-07)</h2>
+        <p style="font-size: 0.75rem; color: var(--cb-gray-500); margin: 0;">Forensic record of all status changes, assignments, and escalations.</p>
+      </div>
+      <a href="{{ url_for('admin.audits') }}" class="btn btn-secondary btn-sm">
+        View Full Audit Journal (100 Entries) →
+      </a>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+            <th style="padding: 0.4rem;">Timestamp</th>
+            <th style="padding: 0.4rem;">Event Action</th>
+            <th style="padding: 0.4rem;">Actor Role</th>
+            <th style="padding: 0.4rem;">Actor Name</th>
+            <th style="padding: 0.4rem;">Case ID</th>
+            <th style="padding: 0.4rem;">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in recent_audits[:15] %}
+            <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+              <td style="padding: 0.4rem; color: var(--cb-gray-500); font-family: var(--cb-font-mono); font-size: 0.75rem;">
+                {{ a.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+              </td>
+              <td style="padding: 0.4rem;">
+                <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.7rem;">
+                  {{ a.event_type }}
+                </span>
+              </td>
+              <td style="padding: 0.4rem; color: var(--cb-gray-700);">{{ a.actor_role }}</td>
+              <td style="padding: 0.4rem; font-weight: 600; color: var(--cb-navy);">{{ a.actor }}</td>
+              <td style="padding: 0.4rem; font-family: var(--cb-font-mono);">
+                {{ '#' ~ a.case_id if a.case_id else '-' }}
+              </td>
+              <td style="padding: 0.4rem; color: var(--cb-gray-700); font-size: 0.8rem;">{{ a.details }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleForm(formId) {
+    const el = document.getElementById(formId);
+    if (el) {
+      el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    }
+  }
+</script>
+{% endblock %}

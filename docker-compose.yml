@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-casebridge_db}
+      MYSQL_USER: ${MYSQL_USER:-casebridge_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-casebridge_secure_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-casebridge_root_secret}
+    # Note: MySQL is intentionally NOT exposed publicly to the host.
+    # It communicates with the CaseBridge web application via the private internal bridge network.
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - casebridge_internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-production}
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:-casebridge_user}:${MYSQL_PASSWORD:-casebridge_secure_password}@db:3306/${MYSQL_DATABASE:-casebridge_db}
+      SECRET_KEY: ${SECRET_KEY:-dev_secret_key_override_required_in_production}
+      TRACKING_CODE_SALT: ${TRACKING_CODE_SALT:-cb_default_pepper_salt_value}
+      CASE_ENCRYPTION_KEY: ${CASE_ENCRYPTION_KEY:-}
+      RATELIMIT_STORAGE_URI: ${RATELIMIT_STORAGE_URI:-memory://}
+      UPLOAD_FOLDER: /home/casebridge/app/instance/protected_uploads
+      MAX_CONTENT_LENGTH_MB: ${MAX_CONTENT_LENGTH_MB:-5}
+      INSTITUTION_NAME: ${INSTITUTION_NAME:-Metropolitan University Ethics & Case Office}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-integrity-helpdesk@university.edu}
+      PHONE_NUMBER: ${PHONE_NUMBER:-+92 42 99029216}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - protected_uploads:/home/casebridge/app/instance/protected_uploads
+    networks:
+      - casebridge_internal
+
+volumes:
+  mysql_data:
+  protected_uploads:
+
+networks:
+  casebridge_internal:
+    driver: bridge

@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Case Triage Queue | CaseBridge{% endblock %}
+
+{% block content %}
+<div class="container" style="margin: 1.5rem auto 3.5rem;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+        Workflow & Triage Queue
+      </span>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.35rem 0 0.25rem;">
+        Institutional Case Queue
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); margin: 0;">
+        Filter and triage cases. Identity fields are strictly omitted to protect whistleblower confidentiality.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('committee.dashboard') }}" class="btn btn-secondary btn-sm">
+        ← Back to Dashboard
+      </a>
+      {% if session.get('user_role') == 'SYSTEM_ADMIN' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-dark btn-sm">
+          ⚙ Administration
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="card" style="margin-bottom: 1.5rem; padding: 1rem;">
+    <form action="{{ url_for('committee.cases') }}" method="GET" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+      <!-- Status Filter -->
+      <div style="flex: 1; min-width: 140px;">
+        <label for="status" class="form-label" style="font-size: 0.75rem;">Status</label>
+        <select name="status" id="status" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+          <option value="">All Statuses</option>
+          <option value="Received" {% if current_status == 'Received' %}selected{% endif %}>Received</option>
+          <option value="Assigned" {% if current_status == 'Assigned' %}selected{% endif %}>Assigned</option>
+          <option value="In Review" {% if current_status == 'In Review' %}selected{% endif %}>In Review</option>
+          <option value="Action Required" {% if current_status == 'Action Required' %}selected{% endif %}>Action Required</option>
+          <option value="Resolved" {% if current_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+          <option value="Closed" {% if current_status == 'Closed' %}selected{% endif %}>Closed</option>
+        </select>
+      </div>
+
+      <!-- Priority Filter -->
+      <div style="flex: 1; min-width: 140px;">
+        <label for="priority" class="form-label" style="font-size: 0.75rem;">Priority</label>
+        <select name="priority" id="priority" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+          <option value="">All Priorities</option>
+          <option value="Low" {% if current_priority == 'Low' %}selected{% endif %}>Low</option>
+          <option value="Medium" {% if current_priority == 'Medium' %}selected{% endif %}>Medium</option>
+          <option value="High" {% if current_priority == 'High' %}selected{% endif %}>High</option>
+          <option value="Critical" {% if current_priority == 'Critical' %}selected{% endif %}>Critical</option>
+        </select>
+      </div>
+
+      <!-- Category Filter -->
+      <div style="flex: 1; min-width: 160px;">
+        <label for="category_id" class="form-label" style="font-size: 0.75rem;">Category</label>
+        <select name="category_id" id="category_id" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if current_category == cat.id|string %}selected{% endif %}>
+              {{ cat.name }} ({{ cat.sla_days }}d SLA)
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Assignment Filter -->
+      <div style="flex: 1; min-width: 150px;">
+        <label for="assigned" class="form-label" style="font-size: 0.75rem;">Assignment</label>
+        <select name="assigned" id="assigned" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+          <option value="">All Cases</option>
+          <option value="my_cases" {% if current_assigned == 'my_cases' %}selected{% endif %}>Assigned to Me</option>
+          <option value="unassigned" {% if current_assigned == 'unassigned' %}selected{% endif %}>Unassigned Cases</option>
+        </select>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem;">
+          Apply Filters
+        </button>
+        <a href="{{ url_for('committee.cases') }}" class="btn btn-secondary btn-sm" style="padding: 0.5rem 0.85rem;">
+          Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Mandatory Queue Columns: Case, Category, Priority, Status, Assigned, Created, Updated, Deadline -->
+  <div class="card">
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--cb-gray-200); text-align: left; color: var(--cb-gray-600);">
+            <th style="padding: 0.6rem 0.5rem;">Case</th>
+            <th style="padding: 0.6rem 0.5rem;">Category</th>
+            <th style="padding: 0.6rem 0.5rem;">Priority</th>
+            <th style="padding: 0.6rem 0.5rem;">Status</th>
+            <th style="padding: 0.6rem 0.5rem;">Assigned</th>
+            <th style="padding: 0.6rem 0.5rem;">Created</th>
+            <th style="padding: 0.6rem 0.5rem;">Updated</th>
+            <th style="padding: 0.6rem 0.5rem;">Deadline</th>
+            <th style="padding: 0.6rem 0.5rem; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cases %}
+            <tr style="border-bottom: 1px solid var(--cb-gray-200);">
+              <!-- Column 1: Case (Subject & ID) -->
+              <td style="padding: 0.75rem 0.5rem;">
+                <div style="font-weight: 600; color: var(--cb-navy);">{{ c.subject }}</div>
+                <div style="font-size: 0.75rem; color: var(--cb-gray-500); font-family: var(--cb-font-mono);">
+                  Case #{{ c.id }}
+                </div>
+              </td>
+
+              <!-- Column 2: Category -->
+              <td style="padding: 0.5rem; color: var(--cb-gray-800);">
+                {{ c.category.name if c.category else 'General' }}
+              </td>
+
+              <!-- Column 3: Priority -->
+              <td style="padding: 0.5rem;">
+                <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.75rem;">
+                  {{ c.priority.value }}
+                </span>
+              </td>
+
+              <!-- Column 4: Status -->
+              <td style="padding: 0.5rem;">
+                <span class="badge badge-{{ c.status.value.lower().replace(' ', '-') }}">
+                  {{ c.status.value }}
+                </span>
+                {% if c.is_overdue %}
+                  <span class="badge badge-danger" style="margin-left: 0.2rem; font-size: 0.65rem;">
+                    Overdue
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Column 5: Assigned -->
+              <td style="padding: 0.5rem; color: var(--cb-gray-700);">
+                {% if c.assigned_to %}
+                  <strong>{{ c.assigned_to.full_name }}</strong>
+                  <div style="font-size: 0.7rem; color: var(--cb-gray-500);">{{ c.assigned_to.department }}</div>
+                {% else %}
+                  <span style="color: var(--cb-gray-400); font-style: italic;">Unassigned</span>
+                {% endif %}
+              </td>
+
+              <!-- Column 6: Created -->
+              <td style="padding: 0.5rem; color: var(--cb-gray-500); font-size: 0.8rem;">
+                {{ c.created_at.strftime('%b %d, %Y') }}
+              </td>
+
+              <!-- Column 7: Updated -->
+              <td style="padding: 0.5rem; color: var(--cb-gray-500); font-size: 0.8rem;">
+                {{ c.updated_at.strftime('%b %d, %Y') }}
+              </td>
+
+              <!-- Column 8: Deadline -->
+              <td style="padding: 0.5rem; font-size: 0.8rem; color: {{ 'var(--cb-red)' if c.is_overdue else 'var(--cb-gray-700)' }};">
+                {{ c.deadline_at.strftime('%b %d, %Y') if c.deadline_at else '-' }}
+              </td>
+
+              <!-- Action Column -->
+              <td style="padding: 0.5rem; text-align: right;">
+                <a href="{{ url_for('committee.case_detail', case_id=c.id) }}" class="btn btn-primary btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                  Manage →
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+
+          {% if not cases %}
+            <tr>
+              <td colspan="9" style="padding: 3rem; text-align: center; color: var(--cb-gray-500);">
+                No cases found matching the specified filters.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

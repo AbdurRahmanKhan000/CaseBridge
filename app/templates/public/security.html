@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Security Architecture & Cryptographic Trust | CaseBridge{% endblock %}
+{% block meta_description %}Discover how CaseBridge safeguards whistleblower communications: high-entropy tracking codes, SHA-256 peppered digests, AES-256 field encryption, and OWASP ASVS verification.{% endblock %}
+
+{% block content %}
+<div class="container-md" style="margin: 1.5rem auto 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2.5rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Architecture & Cryptography
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.75rem;">
+      Security Architecture & Cryptographic Trust
+    </h1>
+    <p style="font-size: 1rem; color: var(--cb-gray-600); max-width: 650px; margin: 0 auto;">
+      Defense-in-depth principles engineered to guarantee whistleblower confidentiality and institutional integrity.
+    </p>
+  </div>
+
+  <!-- Layer 1: High Entropy Tracking Token -->
+  <div class="card" style="margin-bottom: 1.75rem; border-top: 4px solid var(--cb-blue);">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      1. High-Entropy Unpredictable Tracking Codes
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      Instead of simple sequential complaint numbers (e.g. <code>#1001</code>, <code>#1002</code>) which are trivial to enumerate, CaseBridge generates unpredictable 16-character keys formatted as <code>CB-XXXX-XXXX-XXXX</code>.
+    </p>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      The 12 random alphanumeric characters are selected using Python's cryptographically secure pseudo-random number generator (<code>secrets.choice</code>) from an unambiguous character alphabet that excludes visually similar characters (omitting 0, O, 1, and I).
+    </p>
+    <div style="background: var(--cb-gray-100); border-radius: var(--cb-radius-md); padding: 0.85rem 1rem; font-family: var(--cb-font-mono); font-size: 0.8rem; color: var(--cb-navy); border: 1px solid var(--cb-gray-200);">
+      Keyspace Entropy: 32^12 ≈ 1.15 × 10^18 possible permutations
+    </div>
+  </div>
+
+  <!-- Layer 2: Irreversible One-Way Hash Storage -->
+  <div class="card" style="margin-bottom: 1.75rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      2. Irreversible One-Way Hash Storage (SHA-256 + Pepper)
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      The plain tracking code is only returned to the student once in the submission response. In our database, the column <code>tracking_hash</code> stores a SHA-256 digest computed with an application-level server pepper:
+    </p>
+    <div style="background: var(--cb-gray-100); border-radius: var(--cb-radius-md); padding: 0.85rem 1rem; font-family: var(--cb-font-mono); font-size: 0.8rem; color: var(--cb-blue); border: 1px solid var(--cb-gray-200); margin-bottom: 0.75rem;">
+      digest = SHA-256(tracking_code + TRACKING_CODE_SALT)
+    </div>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+      Even if an adversary were to gain read access to the database tables, they could not derive the plain tracking codes to access active student communication threads.
+    </p>
+  </div>
+
+  <!-- Layer 3: Application-Level Field Encryption -->
+  <div class="card" style="margin-bottom: 1.75rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      3. Application-Level Field Encryption at Rest (AES-256 / Fernet)
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      Sensitive complaint text (<code>cases.narrative</code>) and two-way messages (<code>messages.message_content</code>) are encrypted before being written to the database engine using symmetric AES-256 (Fernet) keys loaded from server-side environment secrets.
+    </p>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+      Non-sensitive metadata (category, status, priority, creation date) remains unencrypted to allow fast, indexed institutional filtering without sacrificing narrative confidentiality.
+    </p>
+  </div>
+
+  <!-- Layer 4: Brute-Force & Enumeration Protections -->
+  <div class="card" style="margin-bottom: 1.75rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      4. Anti-Enumeration & Rate-Limiting Controls
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      The tracking lookup endpoint (<code>/track</code>) is strictly bounded by moving-window rate limits (maximum 20 queries per minute per client). Rapid non-matching queries incur temporary client lockouts.
+    </p>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+      Furthermore, error messages returned for non-existent codes give identical, safe feedback without revealing whether nearby tokens exist.
+    </p>
+  </div>
+
+  <!-- Layer 5: Role-Based Access Control & Immutable Auditing -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.25rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      5. Role-Based Access Control (RBAC) & Tamper-Evident Event Logs
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.75rem;">
+      Institutional access is strictly partitioned into three roles: <strong>Committee Member</strong>, <strong>Committee Lead</strong>, and <strong>System Administrator</strong>. Staff passwords are protected with modern Scrypt key-derivation functions.
+    </p>
+    <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+      Every status transition, assignment change, and escalation triggers an immutable entry in <code>case_events</code> capturing the actor role, timestamp, and safe metadata. Staff members cannot alter or delete past historical events.
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ url_for('public.track') }}" class="btn btn-primary">
+      Track a Case With Your Code
+    </a>
+    <a href="{{ url_for('public.privacy') }}" class="btn btn-secondary">
+      Read Privacy Policy
+    </a>
+    <a href="{{ url_for('public.about') }}" class="btn btn-secondary">
+      About ARK Ecosystem
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Track Case Status | CaseBridge Anonymous Investigation Portal{% endblock %}
+{% block meta_description %}Track your submitted case status, review investigation milestones, read official committee responses, and send anonymous follow-up messages using your private tracking code.{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 920px; margin: 1.5rem auto 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Status & Two-Way Dialogue
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.5rem;">
+      Case Tracking Portal
+    </h1>
+    <p style="font-size: 0.95rem; color: var(--cb-gray-600); max-width: 620px; margin: 0 auto;">
+      Enter your confidential 16-character tracking code to review committee notes, track investigation milestones, or reply anonymously.
+    </p>
+  </div>
+
+  <!-- Search Card -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <form action="{{ url_for('public.track') }}" method="POST" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div style="flex: 1; min-width: 260px;">
+        <label for="tracking_code" class="form-label">Enter 16-Character Tracking Code</label>
+        <input
+          type="text"
+          id="tracking_code"
+          name="tracking_code"
+          value="{{ tracking_code or '' }}"
+          class="form-control tracking-code-input"
+          placeholder="e.g. CB-9K2M-4F8X-7R3A"
+          required
+          aria-describedby="track_input_help"
+          style="font-family: var(--cb-font-mono); font-weight: 700; text-transform: uppercase;"
+        >
+      </div>
+
+      <div style="align-self: flex-end;">
+        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; height: 42px;">
+          Track Case
+        </button>
+      </div>
+    </form>
+    <div id="track_input_help" class="form-text" style="margin-top: 0.5rem;">
+      Format: <code>CB-XXXX-XXXX-XXXX</code>. Case queries are strictly rate-limited to prevent automated enumeration.
+    </div>
+
+    <!-- Safe Error Handling (No enumeration leakage) -->
+    {% if not_found %}
+      <div class="alert alert-danger" role="alert" style="margin-top: 1.25rem; margin-bottom: 0;">
+        <strong>Case Not Found:</strong> No case record was found matching the provided code. Please verify each of the 16 characters. For security against guessing, queries are rate-limited. If you lost your code, review our <a href="{{ url_for('public.faq') }}" style="color: var(--cb-red-text); font-weight: 700; text-decoration: underline;">lost code policy</a>.
+      </div>
+    {% elif invalid_format %}
+      <div class="alert alert-warning" role="alert" style="margin-top: 1.25rem; margin-bottom: 0;">
+        <strong>Invalid Format:</strong> CaseBridge tracking codes consist of "CB-" followed by three groups of four characters (e.g. <code>CB-9K2M-4F8X-7R3A</code>). Please recheck the characters you copied.
+      </div>
+    {% endif %}
+  </div>
+
+  {% if case %}
+    <!-- Case Overview & Milestone Card -->
+    <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--cb-blue);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-gray-700); font-family: var(--cb-font-mono); margin-bottom: 0.5rem;">
+            Tracking: {{ tracking_code }}
+          </span>
+          <h2 style="font-size: 1.35rem; color: var(--cb-navy); margin-top: 0.25rem;">
+            {{ case.subject }}
+          </h2>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <!-- Status Badge -->
+          <span class="badge badge-{{ case.status.value.lower().replace(' ', '-') }}" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+            {{ case.status.value }}
+          </span>
+
+          <!-- Priority Badge -->
+          <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); border-color: var(--cb-gray-300); font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+            {{ case.priority.value }} Priority
+          </span>
+
+          {% if case.is_overdue %}
+            <span class="badge badge-overdue" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">
+              ⚠ Escalation Flag Active
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Investigation Workflow Stepper (FR-03/FR-06) -->
+      <div style="margin: 1.5rem 0; background: var(--cb-gray-50); padding: 1.25rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--cb-gray-500); margin-bottom: 0.75rem; letter-spacing: 0.05em;">
+          Current Investigation Milestone
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+          {% set stages = ['Received', 'Assigned', 'In Review', 'Action Required', 'Resolved', 'Closed'] %}
+          {% set current_idx = stages.index(case.status.value) if case.status.value in stages else 0 %}
+          {% for stage in stages %}
+            {% set is_past_or_current = loop.index0 <= current_idx %}
+            {% set is_current = (stage == case.status.value) %}
+            <div style="text-align: center; flex: 1; min-width: 80px;">
+              <div style="width: 26px; height: 26px; border-radius: 50%; margin: 0 auto 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; background: {{ 'var(--cb-blue)' if is_past_or_current else 'var(--cb-gray-300)' }}; color: white; border: {{ '2px solid var(--cb-navy)' if is_current else 'none' }};">
+                {{ loop.index }}
+              </div>
+              <div style="font-size: 0.75rem; font-weight: {{ '700' if is_current else '500' }}; color: {{ 'var(--cb-navy)' if is_past_or_current else 'var(--cb-gray-400)' }};">
+                {{ stage }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Case Metadata Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; border-top: 1px solid var(--cb-gray-200); padding-top: 1rem; font-size: 0.85rem;">
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Category:</span>
+          <strong>{{ case.category.name if case.category else 'General' }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Created Date:</span>
+          <strong>{{ case.created_at.strftime('%b %d, %Y') }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Last Activity:</span>
+          <strong>{{ case.updated_at.strftime('%b %d, %Y') }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Target SLA:</span>
+          <strong style="color: {{ 'var(--cb-red)' if case.is_overdue else 'var(--cb-navy)' }};">
+            {{ case.category.sla_days if case.category else 7 }} Days
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incident Narrative Details (Encrypted at rest, displayed safely to key holder) -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        Original Incident Description
+      </h3>
+      <div style="background: var(--cb-gray-50); border-radius: var(--cb-radius-md); padding: 1rem; font-size: 0.85rem; color: var(--cb-gray-800); line-height: 1.6; white-space: pre-wrap; border: 1px solid var(--cb-gray-200);">
+        {{ case.narrative }}
+      </div>
+      {% if case.location %}
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--cb-gray-600);">
+          <strong>Location / Context:</strong> {{ case.location }}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Permitted Attachments (FR-08) -->
+    {% if case.attachments %}
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+          Verified Evidence Attachments
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {% for att in case.attachments %}
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-sm); padding: 0.6rem 0.85rem; font-size: 0.8rem;">
+              <div>
+                <strong>{{ att.original_filename }}</strong>
+                <span style="color: var(--cb-gray-500); margin-left: 0.5rem;">({{ (att.file_size / 1024)|round(1) }} KB)</span>
+              </div>
+              <span class="badge" style="background: var(--cb-white); color: var(--cb-gray-600); border-color: var(--cb-gray-300);">
+                Stored Securely
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Two-Way Anonymous Dialogue Thread (FR-04) -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.15rem; color: var(--cb-navy); margin: 0;">
+          Communication Thread
+        </h3>
+        <span style="font-size: 0.75rem; color: var(--cb-gray-500);">
+          Two-way anonymous exchange with the review committee
+        </span>
+      </div>
+
+      <!-- Messages Stream (STRICT RULE: Exclude is_internal_note=True) -->
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.75rem;">
+        {% set public_count = 0 %}
+        {% for msg in case.messages %}
+          {% if not msg.is_internal_note %}
+            {% set public_count = public_count + 1 %}
+            <div style="padding: 1rem; border-radius: var(--cb-radius-md); border: 1px solid {{ 'var(--cb-blue-light)' if msg.sender_context.value == 'STUDENT' else '#e2e8f0' }}; background: {{ '#f0f9ff' if msg.sender_context.value == 'STUDENT' else 'var(--cb-white)' }};">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; font-size: 0.75rem;">
+                <strong style="color: {{ 'var(--cb-blue)' if msg.sender_context.value == 'STUDENT' else 'var(--cb-navy)' }};">
+                  {% if msg.sender_context.value == 'STUDENT' %}
+                    👤 You (Anonymous Complainant)
+                  {% else %}
+                    🏛 {{ msg.display_name or 'Ethics & Case Committee' }}
+                  {% endif %}
+                </strong>
+                <span style="color: var(--cb-gray-500);">
+                  {{ msg.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+                </span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--cb-gray-800); line-height: 1.6; white-space: pre-wrap;">
+                {{ msg.message_content }}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if public_count == 0 %}
+          <div style="text-align: center; color: var(--cb-gray-500); padding: 2rem; font-size: 0.85rem; background: var(--cb-gray-50); border-radius: var(--cb-radius-md); border: 1px dashed var(--cb-gray-300);">
+            No messages posted yet. If the review committee requires clarifying details, their response will appear here.
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Reply Box (Only if case is not closed) -->
+      {% if case.status.value not in ['Resolved', 'Closed'] %}
+        <form action="{{ url_for('public.post_student_message', tracking_code=tracking_code) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-group">
+            <label for="message_body" class="form-label">Send Anonymous Follow-Up Message</label>
+            <textarea
+              name="message_body"
+              id="message_body"
+              rows="4"
+              class="form-control"
+              placeholder="Answer committee inquiries or provide additional factual context here. Remember not to mention personal details if you want to remain anonymous."
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm">
+            Send Anonymous Message
+          </button>
+        </form>
+      {% else %}
+        <div class="alert alert-info" style="font-size: 0.85rem; margin-bottom: 0;">
+          This case has reached final resolution (<strong>{{ case.status.value }}</strong>). The dialogue thread is archived.
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

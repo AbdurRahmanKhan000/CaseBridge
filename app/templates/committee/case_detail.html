@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Case #{{ case.id }} Management | CaseBridge{% endblock %}
+
+{% block content %}
+<div class="container" style="margin: 1.5rem auto 3.5rem;">
+  <!-- Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <a href="{{ url_for('committee.cases') }}" style="font-size: 0.8rem; color: var(--cb-blue); text-decoration: none; font-weight: 600;">
+        ← Back to Case Queue
+      </a>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin: 0.35rem 0 0.25rem;">
+        {{ case.subject }}
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); margin: 0;">
+        Internal Case #{{ case.id }} • Category: <strong>{{ case.category.name if case.category else 'General' }}</strong> • Received: {{ case.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+      <span class="badge badge-{{ case.status.value.lower().replace(' ', '-') }}" style="font-size: 0.85rem; padding: 0.35rem 0.65rem;">
+        {{ case.status.value }}
+      </span>
+      <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-navy); font-size: 0.85rem; padding: 0.35rem 0.65rem;">
+        {{ case.priority.value }} Priority
+      </span>
+      {% if case.is_overdue %}
+        <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.35rem 0.65rem;">
+          ⚠ Overdue SLA
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Distinct Visual Separation Banner -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.5rem 1rem; border-radius: var(--cb-radius-sm); text-align: center;">
+      🌐 Left Column: Shared Case Narrative & Public Student Dialogue
+    </div>
+    <div style="background: #fefce8; border: 1px solid #fef08a; color: #854d0e; padding: 0.5rem 1rem; border-radius: var(--cb-radius-sm); text-align: center;">
+      🔒 Right Column: Restricted Internal Staff Management & Notes
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; align-items: start;">
+    <!-- LEFT COLUMN: PUBLIC/SHARED CASE INFORMATION -->
+    <div>
+      <!-- 1. Intake Narrative Card -->
+      <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--cb-blue);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin: 0;">Factual Incident Narrative</h2>
+          <span style="font-size: 0.75rem; color: var(--cb-gray-500);">Submitted by Anonymous Whistleblower</span>
+        </div>
+
+        <div style="background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1rem; font-size: 0.85rem; color: var(--cb-gray-800); line-height: 1.6; white-space: pre-wrap;">
+          {{ case.narrative }}
+        </div>
+
+        <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: var(--cb-gray-600); border-top: 1px solid var(--cb-gray-200); padding-top: 0.75rem;">
+          <div>
+            <strong style="color: var(--cb-navy);">Context / Location:</strong><br>
+            {{ case.location or 'Not specified' }}
+          </div>
+          <div>
+            <strong style="color: var(--cb-navy);">Incident Date:</strong><br>
+            {{ case.incident_date.strftime('%b %d, %Y') if case.incident_date else 'Ongoing / Unspecified' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Permitted Evidence Attachments (FR-08) -->
+      {% if case.attachments %}
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+            Evidence Attachments ({{ case.attachments|length }})
+          </h2>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            {% for att in case.attachments %}
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-sm); padding: 0.6rem 0.85rem; font-size: 0.8rem;">
+                <div>
+                  <strong style="color: var(--cb-navy);">{{ att.original_filename }}</strong>
+                  <span style="color: var(--cb-gray-500); margin-left: 0.5rem;">({{ (att.file_size / 1024)|round(1) }} KB)</span>
+                </div>
+                <span style="font-family: var(--cb-font-mono); font-size: 0.7rem; color: var(--cb-gray-500);">
+                  SHA-256: {{ att.sha256_checksum[:12] }}...
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- 3. Communication Thread & Public Dialogue -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin: 0;">
+            Dialogue Thread & Inquiries
+          </h2>
+          <span style="font-size: 0.75rem; color: var(--cb-gray-500);">
+            Responses marked official appear on the student tracking page
+          </span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+          {% for msg in case.messages %}
+            {% if not msg.is_internal_note %}
+              <div style="padding: 0.85rem 1rem; border-radius: var(--cb-radius-md); border: 1px solid {{ '#bfdbfe' if msg.sender_type.value == 'STUDENT' else '#e2e8f0' }}; background: {{ '#f0f9ff' if msg.sender_type.value == 'STUDENT' else 'var(--cb-white)' }};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.75rem;">
+                  <strong style="color: {{ 'var(--cb-blue)' if msg.sender_type.value == 'STUDENT' else 'var(--cb-navy)' }};">
+                    {% if msg.sender_type.value == 'STUDENT' %}
+                      👤 Anonymous Complainant (via Tracking Portal)
+                    {% else %}
+                      🏛 {{ msg.display_name }} (Official Committee Reply)
+                    {% endif %}
+                  </strong>
+                  <span style="color: var(--cb-gray-500);">
+                    {{ msg.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+                  </span>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--cb-gray-800); line-height: 1.5; white-space: pre-wrap;">
+                  {{ msg.body }}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if not case.messages %}
+            <div style="text-align: center; color: var(--cb-gray-500); padding: 1.5rem; font-size: 0.85rem; background: var(--cb-gray-50); border-radius: var(--cb-radius-md); border: 1px dashed var(--cb-gray-300);">
+              No messages posted yet. Use the response form below to send an inquiry to the student or record an internal note.
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Add Message / Internal Note Form -->
+        <form action="{{ url_for('committee.post_committee_message', case_id=case.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-group">
+            <label for="message_body" class="form-label">Post Reply or Internal Note</label>
+            <textarea
+              name="message_body"
+              id="message_body"
+              rows="4"
+              class="form-control"
+              placeholder="Type your official response to the student, or check 'Internal Note' to log confidential findings."
+              required
+            ></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <label style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; cursor: pointer; background: #fefce8; padding: 0.4rem 0.75rem; border-radius: var(--cb-radius-sm); border: 1px solid #fef08a;">
+              <input type="checkbox" name="is_internal_note" value="true" style="min-width: 16px; min-height: 16px;">
+              <span style="color: #854d0e;"><strong>Confidential Internal Note</strong> (Hidden from student)</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-sm">
+              Post Entry
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: RESTRICTED INTERNAL STAFF INFORMATION -->
+    <div>
+      <!-- 1. Case Workflow Status Control -->
+      <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--cb-navy);">
+        <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+          Workflow Status Transition
+        </h2>
+        <form action="{{ url_for('committee.update_status', case_id=case.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-group">
+            <label for="status" class="form-label" style="font-size: 0.75rem;">Current Investigation Stage</label>
+            <select name="status" id="status" class="form-control" style="font-size: 0.85rem;">
+              <option value="Received" {% if case.status.value == 'Received' %}selected{% endif %}>Received</option>
+              <option value="Assigned" {% if case.status.value == 'Assigned' %}selected{% endif %}>Assigned</option>
+              <option value="In Review" {% if case.status.value == 'In Review' %}selected{% endif %}>In Review</option>
+              <option value="Action Required" {% if case.status.value == 'Action Required' %}selected{% endif %}>Action Required</option>
+              <option value="Resolved" {% if case.status.value == 'Resolved' %}selected{% endif %}>Resolved</option>
+              <option value="Closed" {% if case.status.value == 'Closed' %}selected{% endif %}>Closed</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">
+            Update Case Status
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. Assignment & Delegation Workspace (Lead / Admin Capabilities) -->
+      <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid #6366f1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin: 0;">Investigator Assignment</h2>
+          {% if can_manage_assignment %}
+            <span class="badge" style="background: #eef2ff; color: #4338ca; font-size: 0.7rem;">Lead Permitted</span>
+          {% else %}
+            <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-gray-500); font-size: 0.7rem;">Read Only</span>
+          {% endif %}
+        </div>
+
+        <div style="font-size: 0.85rem; margin-bottom: 1rem;">
+          <div style="margin-bottom: 0.4rem;">
+            <span style="color: var(--cb-gray-500); font-size: 0.75rem;">Currently Assigned:</span><br>
+            {% if case.assigned_to %}
+              <strong>{{ case.assigned_to.full_name }}</strong> ({{ case.assigned_to.department }})
+            {% else %}
+              <span style="color: var(--cb-amber-text); font-weight: 600;">⚠ Unassigned</span>
+            {% endif %}
+          </div>
+          <div>
+            <span style="color: var(--cb-gray-500); font-size: 0.75rem;">Resolution Deadline:</span><br>
+            <strong style="color: {{ 'var(--cb-red)' if case.is_overdue else 'var(--cb-navy)' }};">
+              {{ case.deadline_at.strftime('%b %d, %Y') if case.deadline_at else 'None set' }}
+            </strong>
+          </div>
+        </div>
+
+        <!-- Assign/Reassign Form (Rendered only for Lead & Admin; Backend strictly enforces 403 on POST) -->
+        {% if can_manage_assignment %}
+          <form action="{{ url_for('committee.assign_case', case_id=case.id) }}" method="POST" style="border-top: 1px solid var(--cb-gray-200); padding-top: 0.75rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label for="assigned_user_id" class="form-label" style="font-size: 0.75rem;">Delegate to Officer</label>
+              <select name="assigned_user_id" id="assigned_user_id" class="form-control" style="font-size: 0.85rem;" required>
+                <option value="">Select Committee Investigator...</option>
+                {% for u in users %}
+                  <option value="{{ u.id }}" {% if case.assigned_to_id == u.id %}selected{% endif %}>
+                    {{ u.full_name }} ({{ u.department }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="assignment_notes" class="form-label" style="font-size: 0.75rem;">Assignment Instructions</label>
+              <input type="text" name="assignment_notes" id="assignment_notes" class="form-control" placeholder="e.g. Lead inquiry into laboratory grading bias." style="font-size: 0.8rem;">
+            </div>
+
+            <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%;">
+              Assign / Delegate Case
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
+      <!-- 3. Formal Escalation Control (Lead / Admin) -->
+      {% if can_escalate %}
+        <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--cb-amber);">
+          <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+            Formal Case Escalation
+          </h2>
+          <p style="font-size: 0.75rem; color: var(--cb-gray-600); margin-bottom: 0.75rem;">
+            Trigger urgent review when resolution deadlines breach or high retaliation hazards emerge.
+          </p>
+
+          <form action="{{ url_for('committee.escalate_case', case_id=case.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label for="trigger_reason" class="form-label" style="font-size: 0.75rem;">Trigger Reason</label>
+              <input type="text" name="trigger_reason" id="trigger_reason" class="form-control" placeholder="e.g. 72-hour deadline breached / Retaliation threat" required style="font-size: 0.8rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label for="escalation_target" class="form-label" style="font-size: 0.75rem;">Escalation Target Body</label>
+              <input type="text" name="escalation_target" id="escalation_target" class="form-control" placeholder="e.g. University Ombudsperson / Dean of Student Welfare" required style="font-size: 0.8rem;">
+            </div>
+
+            <button type="submit" class="btn btn-warning btn-sm" style="width: 100%; font-size: 0.8rem; background: var(--cb-amber-text); color: white; border: none;">
+              Initiate Formal Escalation
+            </button>
+          </form>
+        </div>
+      {% endif %}
+
+      <!-- 4. Confidential Internal Investigator Notes (STRICT PRIVACY: NEVER EXPOSED TO STUDENT) -->
+      <div class="card" style="margin-bottom: 1.5rem; background: #fffdf5; border: 1px solid #fef08a;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h2 style="font-size: 1.05rem; color: #854d0e; margin: 0;">
+            🔒 Confidential Internal Notes
+          </h2>
+          <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 0.7rem;">Staff Only</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {% set note_count = 0 %}
+          {% for msg in case.messages %}
+            {% if msg.is_internal_note %}
+              {% set note_count = note_count + 1 %}
+              <div style="padding: 0.6rem 0.75rem; background: var(--cb-white); border: 1px solid #fef08a; border-radius: var(--cb-radius-sm); font-size: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; color: #854d0e; font-size: 0.7rem; margin-bottom: 0.25rem;">
+                  <strong>{{ msg.display_name }}</strong>
+                  <span>{{ msg.created_at.strftime('%b %d, %H:%M') }}</span>
+                </div>
+                <div style="color: var(--cb-gray-800); line-height: 1.4; white-space: pre-wrap;">
+                  {{ msg.body }}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if note_count == 0 %}
+            <div style="font-size: 0.75rem; color: var(--cb-gray-500); text-align: center; padding: 1rem;">
+              No internal notes recorded. Use the message form with "Internal Note" checked to add investigative findings.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 5. Immutable Technical Audit Journal (FR-07) -->
+      <div class="card">
+        <h2 style="font-size: 1.05rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+          Immutable Case Audit Trail
+        </h2>
+        <div style="font-size: 0.75rem; color: var(--cb-gray-500); margin-bottom: 0.75rem;">
+          All state transitions and assignments are recorded in append-only logs.
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 280px; overflow-y: auto;">
+          {% for log in case.events %}
+            <div style="padding: 0.4rem 0.6rem; background: var(--cb-gray-50); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-sm); font-size: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.15rem;">
+                <strong style="color: var(--cb-navy);">{{ log.event_type }}</strong>
+                <span style="color: var(--cb-gray-500); font-family: var(--cb-font-mono); font-size: 0.7rem;">
+                  {{ log.timestamp.strftime('%b %d, %H:%M') }}
+                </span>
+              </div>
+              <div style="color: var(--cb-gray-700);">{{ log.details }}</div>
+              <div style="color: var(--cb-gray-500); font-size: 0.65rem; margin-top: 0.15rem;">
+                Actor: {{ log.actor }} ({{ log.actor_role }})
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

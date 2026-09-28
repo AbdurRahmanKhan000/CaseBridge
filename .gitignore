@@ -1,0 +1,36 @@
+# Node & Frontend Build Artifacts
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Environment & Secrets (Never commit secrets)
+.env*
+!.env.example
+
+# Python Bytecode & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local Instance & Uploads
+instance/*
+!instance/protected_uploads/
+instance/protected_uploads/*
+!instance/protected_uploads/.gitkeep
+
+# Local Docker & MySQL persistence
+mysql_data/

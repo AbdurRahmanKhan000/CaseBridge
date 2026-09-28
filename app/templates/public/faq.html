@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Frequently Asked Questions | CaseBridge Whistleblower FAQ{% endblock %}
+{% block meta_description %}Find answers to common questions regarding anonymous grievance submission, lost tracking codes, investigation timelines, and whistleblower protection.{% endblock %}
+
+{% block content %}
+<div class="container-md" style="margin: 1.5rem auto 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2.5rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Help & Knowledge Base
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.75rem;">
+      Frequently Asked Questions
+    </h1>
+    <p style="font-size: 1rem; color: var(--cb-gray-600); max-width: 650px; margin: 0 auto;">
+      Clear, straightforward guidance regarding anonymity boundaries, investigation stages, and tracking security.
+    </p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 3rem;">
+    <!-- Q1 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        Is my grievance submission genuinely anonymous?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.5rem;">
+        Yes, at the application level. CaseBridge does not require, prompt for, or save your name, student registration number, personal email address, or phone number. Furthermore, the intake database does not record client IP addresses or device telemetry.
+      </p>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+        <strong>Important boundary:</strong> While the application does not store your identity, internet service providers and university Wi-Fi routers maintain network connection logs outside our software. If you require complete network detachment, consider using an off-campus network or the Tor Browser. Read our full <a href="{{ url_for('public.privacy') }}" style="color: var(--cb-blue); font-weight: 600;">Privacy Policy</a>.
+      </p>
+    </div>
+
+    <!-- Q2 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        What happens if I lose my tracking code?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.5rem;">
+        Because CaseBridge stores only an irreversible SHA-256 hash of your tracking key and maintains zero personal contact records, <strong>neither administrators nor committee leads have any way to recover or email your code</strong>.
+      </p>
+      <p style="font-size: 0.85rem; color: var(--cb-gray-600); line-height: 1.5; margin: 0;">
+        If you lose your tracking code, the committee will continue investigating the narrative you already submitted, but you will not be able to read their replies or view the case timeline. If you have critical new information, you will need to submit a follow-up complaint referencing the general incident context.
+      </p>
+    </div>
+
+    <!-- Q3 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        Who reviews my case after I submit it?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+        Cases are received by an authorized Ethics & Case Review Committee comprising trained student welfare officers, faculty ombudspersons, and compliance leads. To prevent conflicts of interest, cases mentioning specific academic departments are barred from being assigned to reviewers belonging to those departments.
+      </p>
+    </div>
+
+    <!-- Q4 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        How long does an investigation take?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.5rem;">
+        Resolution timeframes depend on the urgency of the matter, bounded by formal institutional Service Level Agreements (SLAs):
+      </p>
+      <ul style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; padding-left: 1.25rem; margin: 0;">
+        <li><strong>Critical Priority:</strong> Initial review within 24 hours.</li>
+        <li><strong>High Priority:</strong> Initial review within 72 hours.</li>
+        <li><strong>Medium Priority:</strong> Formal investigation within 7 calendar days.</li>
+        <li><strong>Low / Standard:</strong> Standard administrative review within 10 to 14 days.</li>
+      </ul>
+    </div>
+
+    <!-- Q5 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        How do I communicate with reviewers without giving up my identity?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+        Navigate to the <a href="{{ url_for('public.track') }}" style="color: var(--cb-blue); font-weight: 600;">Track a Case</a> page and enter your 16-character code. The committee posts official inquiries and responses to that private page, and you can type and submit follow-up answers in the reply box at any time without creating an account.
+      </p>
+    </div>
+
+    <!-- Q6 -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.5rem;">
+        What should I do if I am in immediate physical danger?
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+        CaseBridge is an asynchronous case review service and is not monitored 24/7 for immediate physical dispatch. If you or someone else is in immediate physical danger or needs medical assistance, call Campus Security at <strong>{{ emergency_phone }}</strong> or call 911 immediately.
+      </p>
+    </div>
+  </div>
+
+  <!-- Next Actions -->
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ url_for('public.submit') }}" class="btn btn-primary">
+      Submit a Case Anonymously
+    </a>
+    <a href="{{ url_for('public.track') }}" class="btn btn-secondary">
+      Track an Existing Case
+    </a>
+    <a href="{{ url_for('public.how_it_works') }}" class="btn btn-secondary">
+      How the Process Works
+    </a>
+  </div>
+</div>
+{% endblock %}

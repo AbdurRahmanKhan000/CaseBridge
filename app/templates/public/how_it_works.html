@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}How CaseBridge Works | Investigation Process & Resolution Stages{% endblock %}
+{% block meta_description %}Understand the CaseBridge grievance process step-by-step: from anonymous intake and tracking code generation, to committee triage, secure two-way messaging, and resolution.{% endblock %}
+
+{% block content %}
+<div class="container-md" style="margin: 1.5rem auto 3.5rem;">
+  <div style="text-align: center; margin-bottom: 2.5rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Process & Transparency
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.75rem;">
+      How the CaseBridge Process Works
+    </h1>
+    <p style="font-size: 1rem; color: var(--cb-gray-600); max-width: 650px; margin: 0 auto;">
+      A clear, predictable, and retaliation-free pathway from intake to resolution findings.
+    </p>
+  </div>
+
+  <!-- The 7 Sequential Stages mandated by Master Contract -->
+  <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 3rem;">
+    <!-- Step 1 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        1
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          1. Submit Your Case Anonymously
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.5rem;">
+          Choose the appropriate institutional grievance category (e.g. Harassment, Bullying, Academic Issue, Discrimination, or Unfair Treatment). State the facts objectively. You do not provide your name, student ID, or personal contact info.
+        </p>
+        <span class="badge" style="background: var(--cb-gray-100); color: var(--cb-gray-700); border-color: var(--cb-gray-300);">
+          Zero Identity Required
+        </span>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        2
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          2. Receive and Store Your Private Tracking Code
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin-bottom: 0.5rem;">
+          Upon submission, the system generates an unpredictable 16-character tracking code (<code style="font-family: var(--cb-font-mono); font-weight: 700; color: var(--cb-blue);">CB-XXXX-XXXX-XXXX</code>). Save this code immediately.
+        </p>
+        <div class="alert alert-warning" style="margin-bottom: 0; font-size: 0.8rem; padding: 0.6rem 0.85rem;">
+          <strong>Security Note:</strong> CaseBridge stores only an irreversible SHA-256 peppered hash of your code. Because we do not store your email or student record, <strong>lost codes cannot be retrieved or reset by staff</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        3
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          3. Independent Committee Review
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+          The complaint enters the intake queue with the initial status of <strong>Received</strong>. The Ethics & Case Review Committee verifies category classification and assesses urgency against institutional Service Level Agreements (SLAs).
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        4
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          4. Case Assignment & Conflict Checking
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+          The case moves to <strong>Assigned</strong>. An authorized investigator or ombudsperson is designated to handle the matter. If a case touches on a specific department, staff from that department are excluded to prevent conflicts of interest.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        5
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          5. Secure Anonymous Messaging
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+          Investigators can post clarifying inquiries directly to your tracking thread. You can answer and submit additional details at any time using your tracking code without creating an account or revealing your identity.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-blue);">
+      <div style="background: var(--cb-blue); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        6
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          6. Progress Updates & Milestones
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+          As investigations progress, status milestones reflect current proceedings: <strong>In Review</strong> or <strong>Action Required</strong>. If an investigation takes longer than the assigned SLA, an automated overdue flag ensures immediate escalation.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="card" style="display: flex; gap: 1.25rem; align-items: flex-start; border-left: 4px solid var(--cb-green-border);">
+      <div style="background: var(--cb-green-text); color: var(--cb-white); width: 36px; height: 36px; border-radius: var(--cb-radius-full); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.95rem;">
+        7
+      </div>
+      <div>
+        <h2 style="font-size: 1.15rem; color: var(--cb-navy); margin-bottom: 0.35rem;">
+          7. Formal Resolution and Closure
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--cb-gray-700); line-height: 1.6; margin: 0;">
+          Once findings, corrective measures, or policy remedies are decided, the committee updates the case to <strong>Resolved</strong> or <strong>Closed</strong>. Formal outcome summaries are posted to your tracking page for your records.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resolution Timeframe SLA Standards Table -->
+  <div class="card" style="background: var(--cb-gray-100); margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.2rem; color: var(--cb-navy); margin-bottom: 0.75rem;">
+      Institutional Response SLA Benchmarks
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--cb-gray-600); margin-bottom: 1.25rem;">
+      Every case is bounded by resolution deadlines to guarantee timely oversight.
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+      <div style="background: var(--cb-white); padding: 1rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <strong style="color: var(--cb-red-text); font-size: 0.75rem; text-transform: uppercase;">Critical Priority</strong>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.2rem 0;">Within 24 Hours</div>
+        <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Physical safety risks, severe active retaliation</div>
+      </div>
+
+      <div style="background: var(--cb-white); padding: 1rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <strong style="color: var(--cb-amber-text); font-size: 0.75rem; text-transform: uppercase;">High Priority</strong>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.2rem 0;">Within 72 Hours</div>
+        <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Targeted harassment, imminent grading retaliation</div>
+      </div>
+
+      <div style="background: var(--cb-white); padding: 1rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <strong style="color: var(--cb-blue); font-size: 0.75rem; text-transform: uppercase;">Medium Priority</strong>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.2rem 0;">Within 7 Days</div>
+        <div style="font-size: 0.75rem; color: var(--cb-gray-500);">Standard procedural disputes, exam issues</div>
+      </div>
+
+      <div style="background: var(--cb-white); padding: 1rem; border-radius: var(--cb-radius-md); border: 1px solid var(--cb-gray-200);">
+        <strong style="color: var(--cb-gray-600); font-size: 0.75rem; text-transform: uppercase;">Low Priority</strong>
+        <div style="font-size: 1.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.2rem 0;">Within 14 Days</div>
+        <div style="font-size: 0.75rem; color: var(--cb-gray-500);">General institutional feedback, non-urgent queries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Next Actions -->
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ url_for('public.submit') }}" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+      Submit an Anonymous Case
+    </a>
+    <a href="{{ url_for('public.track') }}" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+      Track an Existing Case
+    </a>
+    <a href="{{ url_for('public.security') }}" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+      Review Security Architecture
+    </a>
+  </div>
+</div>
+{% endblock %}

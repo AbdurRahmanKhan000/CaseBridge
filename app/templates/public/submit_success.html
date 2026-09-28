@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Case Submitted Successfully | CaseBridge Tracking Credential{% endblock %}
+{% block meta_description %}Your anonymous case has been logged. Record your 16-character private tracking code to follow case progress and communicate with reviewers.{% endblock %}
+
+{% block content %}
+<div class="container-sm" style="margin: 2rem auto 4rem;">
+  <div class="card" style="border-top: 5px solid var(--cb-green-text); text-align: center;">
+    <!-- Success Icon -->
+    <div style="width: 56px; height: 56px; background: var(--cb-green-bg); color: var(--cb-green-text); border: 2px solid var(--cb-green-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.75rem; font-weight: bold;" aria-hidden="true">
+      ✓
+    </div>
+
+    <span class="badge" style="background: var(--cb-green-bg); color: var(--cb-green-text); border-color: var(--cb-green-border); margin-bottom: 0.5rem; font-size: 0.75rem;">
+      Intake Complete • Zero Direct Identifiers Stored
+    </span>
+
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--cb-navy); margin-bottom: 0.5rem;">
+      Your Anonymous Case Has Been Logged
+    </h1>
+
+    <p style="font-size: 0.95rem; color: var(--cb-gray-600); max-width: 520px; margin: 0 auto 1.75rem; line-height: 1.5;">
+      Your submission has been securely queued for triage by the Ethics & Case Review Committee. Please record your private tracking key immediately.
+    </p>
+
+    <!-- Prominent Unpredictable Tracking Key Box -->
+    <div style="background: var(--cb-gray-100); border: 2px dashed var(--cb-blue); border-radius: var(--cb-radius-md); padding: 1.75rem 1rem; margin-bottom: 1.75rem;">
+      <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--cb-gray-500); letter-spacing: 0.08em; margin-bottom: 0.5rem;">
+        Your Confidential Tracking Code
+      </div>
+
+      <div style="font-family: var(--cb-font-mono); font-size: 2rem; font-weight: 800; color: var(--cb-blue); letter-spacing: 0.1em; margin-bottom: 1rem; user-select: all;" id="trackingCodeText">
+        {{ raw_tracking_code }}
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary btn-sm" id="copyCodeBtn" onclick="copyTrackingCode();">
+          Copy Tracking Code
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="window.print();">
+          Print / Save Confirmation
+        </button>
+      </div>
+      <div id="copyFeedback" style="font-size: 0.75rem; color: var(--cb-green-text); margin-top: 0.5rem; display: none; font-weight: 600;">
+        ✓ Copied to clipboard!
+      </div>
+    </div>
+
+    <!-- Security Advisory Notice -->
+    <div class="alert alert-warning" style="text-align: left; font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.75rem;">
+      <strong>Critical Tracking Custody Rules:</strong>
+      <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0;">
+        <li>CaseBridge stores only an irreversible SHA-256 peppered hash of this code.</li>
+        <li>Because no email or student ID was collected, <strong>institutional staff cannot look up or recover this code for you if lost</strong>.</li>
+        <li>Treat this code like a password. Anyone who has this code can track the case and view committee responses.</li>
+      </ul>
+    </div>
+
+    <!-- Case Metadata Summary -->
+    <div style="text-align: left; background: var(--cb-white); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1.25rem; margin-bottom: 1.75rem;">
+      <h2 style="font-size: 1rem; color: var(--cb-navy); margin-bottom: 0.75rem; border-bottom: 1px solid var(--cb-gray-200); padding-bottom: 0.5rem;">
+        Case Intake Summary
+      </h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem;">
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Grievance Category:</span>
+          <strong>{{ case.category.name if case.category else 'General' }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Initial Priority:</span>
+          <strong>{{ case.priority.value }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Intake Status:</span>
+          <span class="badge badge-received">{{ case.status.value }}</span>
+        </div>
+        <div>
+          <span style="color: var(--cb-gray-500); display: block; font-size: 0.75rem;">Target SLA Window:</span>
+          <strong>{{ case.category.sla_days if case.category else 7 }} Calendar Days</strong>
+        </div>
+      </div>
+      <div style="margin-top: 0.75rem; font-size: 0.85rem;">
+        <span style="color: var(--cb-gray-500); font-size: 0.75rem;">Subject:</span>
+        <div style="font-weight: 600; color: var(--cb-navy); margin-top: 0.2rem;">{{ case.subject }}</div>
+      </div>
+    </div>
+
+    <!-- Direct Navigation Actions -->
+    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('public.track', code=raw_tracking_code) }}" class="btn btn-primary">
+        Go Directly to Case Tracking & Dialogue →
+      </a>
+      <a href="{{ url_for('public.index') }}" class="btn btn-secondary">
+        Return to Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function copyTrackingCode() {
+    const code = document.getElementById('trackingCodeText').innerText.trim();
+    navigator.clipboard.writeText(code).then(() => {
+      const fb = document.getElementById('copyFeedback');
+      fb.style.display = 'block';
+      setTimeout(() => { fb.style.display = 'none'; }, 3000);
+    });
+  }
+</script>
+{% endblock %}

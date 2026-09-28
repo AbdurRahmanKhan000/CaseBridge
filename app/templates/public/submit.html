@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Submit an Anonymous Case | CaseBridge Safe Grievance Intake{% endblock %}
+{% block meta_description %}Submit an anonymous complaint or grievance regarding harassment, discrimination, or unfair treatment without providing your name or student ID.{% endblock %}
+
+{% block content %}
+<div class="container-sm" style="margin: 1.5rem auto 3.5rem;">
+  <!-- Header -->
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <span class="badge" style="background: var(--cb-blue-light); color: var(--cb-blue); border-color: #bfdbfe;">
+      Confidential Intake Form
+    </span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--cb-navy); margin: 0.5rem 0 0.5rem;">
+      Submit an Anonymous Case
+    </h1>
+    <p style="font-size: 0.95rem; color: var(--cb-gray-600); max-width: 580px; margin: 0 auto;">
+      Report harassment, academic bias, corruption, or mistreatment. No name, student ID, or personal email is required.
+    </p>
+  </div>
+
+  <!-- Emergency Warning Box -->
+  <aside class="alert alert-warning" role="alert" style="display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.5rem;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: #b45309; margin-top: 0.1rem;" aria-hidden="true">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <div style="font-size: 0.85rem; line-height: 1.5;">
+      <strong>Immediate Danger Notice:</strong> CaseBridge is an asynchronous case review system, not an immediate dispatch line. If you or someone else is in immediate physical danger, call Campus Security at <strong>{{ emergency_phone }}</strong> or emergency services (911).
+    </div>
+  </aside>
+
+  <!-- Intake Form Card -->
+  <div class="card" style="border-top: 4px solid var(--cb-blue);">
+    <form action="{{ url_for('public.submit') }}" method="POST" enctype="multipart/form-data" id="submitCaseForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Field 1: Category -->
+      <div class="form-group">
+        <label for="category_id" class="form-label">Grievance Category <span aria-hidden="true" style="color: var(--cb-red);">*</span></label>
+        <select name="category_id" id="category_id" class="form-control" required aria-describedby="category_help">
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if loop.first %}selected{% endif %}>
+              {{ cat.name }} (Target SLA: {{ cat.sla_days }} calendar days)
+            </option>
+          {% endfor %}
+        </select>
+        <div id="category_help" class="form-text">
+          Select the classification that best matches the nature of the incident.
+        </div>
+      </div>
+
+      <!-- Field 2: Priority Self-Assessment -->
+      <div class="form-group">
+        <label for="priority" class="form-label">Urgency / Severity Level <span aria-hidden="true" style="color: var(--cb-red);">*</span></label>
+        <select name="priority" id="priority" class="form-control" required aria-describedby="priority_help">
+          <option value="Low">Low — General concern or non-urgent feedback (target 14 days)</option>
+          <option value="Medium" selected>Medium — Standard procedural issue or grading grievance (target 7 days)</option>
+          <option value="High">High — Targeted bias, active retaliation threats (target 72 hours)</option>
+          <option value="Critical">Critical — Severe harassment or ongoing physical safety risk (target 24 hours)</option>
+        </select>
+        <div id="priority_help" class="form-text">
+          Your initial assessment helps the triage committee prioritize intake urgency.
+        </div>
+      </div>
+
+      <!-- Field 3: Subject / Incident Title -->
+      <div class="form-group">
+        <label for="subject" class="form-label">Subject / Incident Title <span aria-hidden="true" style="color: var(--cb-red);">*</span></label>
+        <input
+          type="text"
+          name="subject"
+          id="subject"
+          class="form-control"
+          placeholder="e.g. Retaliatory grading following departmental dispute"
+          required
+          maxlength="190"
+          aria-describedby="subject_help"
+        >
+        <div id="subject_help" class="form-text">
+          A concise summary of the issue. Do NOT include your own name here.
+        </div>
+      </div>
+
+      <!-- Field 4: Optional Context / Location -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="location" class="form-label">Location / Course / Department <span style="font-size: 0.7rem; color: var(--cb-gray-500); text-transform: none; font-weight: normal;">(Optional)</span></label>
+          <input
+            type="text"
+            name="location"
+            id="location"
+            class="form-control"
+            placeholder="e.g. Science Complex Room 402 / BIO 301"
+            maxlength="190"
+            aria-describedby="location_help"
+          >
+          <div id="location_help" class="form-text">
+            Physical or virtual venue.
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="incident_date" class="form-label">Incident Date <span style="font-size: 0.7rem; color: var(--cb-gray-500); text-transform: none; font-weight: normal;">(Optional)</span></label>
+          <input
+            type="date"
+            name="incident_date"
+            id="incident_date"
+            class="form-control"
+            aria-describedby="date_help"
+          >
+          <div id="date_help" class="form-text">
+            Approximate date or leave blank if ongoing.
+          </div>
+        </div>
+      </div>
+
+      <!-- Field 5: Incident Description -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="narrative" class="form-label">Incident Description & Factual Narrative <span aria-hidden="true" style="color: var(--cb-red);">*</span></label>
+        <textarea
+          name="narrative"
+          id="narrative"
+          rows="6"
+          class="form-control"
+          placeholder="Provide a clear, factual account of what occurred, when, and who was involved (faculty, department, staff role). Avoid mentioning unique personal facts that could indirectly identify you if you wish to preserve anonymity."
+          required
+          minlength="30"
+          aria-describedby="narrative_help"
+        ></textarea>
+        <div id="narrative_help" class="form-text" style="display: flex; justify-content: space-between;">
+          <span>Minimum 30 characters required. Focus on verifiable facts.</span>
+          <span id="charCount" style="font-family: var(--cb-font-mono);">0 chars</span>
+        </div>
+      </div>
+
+      <!-- Field 6: Permitted Optional Evidence Attachment (FR-08) -->
+      <div class="form-group" style="background: var(--cb-gray-50); border: 1px dashed var(--cb-gray-300); border-radius: var(--cb-radius-md); padding: 1rem;">
+        <label for="attachment" class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Permitted Evidence Attachment <span style="font-size: 0.7rem; color: var(--cb-gray-500); text-transform: none; font-weight: normal;">(Optional)</span></span>
+          <span style="font-size: 0.7rem; color: var(--cb-gray-500); text-transform: none;">Max 5 MB</span>
+        </label>
+        <input
+          type="file"
+          name="attachment"
+          id="attachment"
+          class="form-control"
+          accept=".pdf,.png,.jpg,.jpeg,.txt,.docx"
+          aria-describedby="attachment_help"
+          style="background: var(--cb-white);"
+        >
+        <div id="attachment_help" class="form-text">
+          Allowed formats: PDF, PNG, JPG, JPEG, TXT, DOCX. Files are stored in an un-routable protected repository. <strong>Tip:</strong> Ensure screenshots do not display personal account email headers or EXIF camera metadata.
+        </div>
+      </div>
+
+      <!-- Consent & Privacy Boundary Acknowledgments -->
+      <div style="background: var(--cb-gray-100); border: 1px solid var(--cb-gray-200); border-radius: var(--cb-radius-md); padding: 1.25rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--cb-gray-800); line-height: 1.5;">
+        <div style="font-weight: 700; color: var(--cb-navy); margin-bottom: 0.5rem;">
+          Whistleblower Integrity & Privacy Terms
+        </div>
+
+        <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; margin-bottom: 0.75rem;">
+          <input type="checkbox" name="consent_ack" id="consent_ack" required style="margin-top: 0.2rem; min-width: 18px; min-height: 18px;">
+          <span>
+            <strong>Zero-ID Intake Acknowledgment:</strong> I understand that CaseBridge does not intentionally collect or require my name, student registration number, personal email, or phone number. I am submitting this case anonymously.
+          </span>
+        </label>
+
+        <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;">
+          <input type="checkbox" required style="margin-top: 0.2rem; min-width: 18px; min-height: 18px;">
+          <span>
+            <strong>Tracking Code Custody:</strong> I understand that the 16-character code I receive upon submission is my ONLY method to view committee responses or reply. Because only a cryptographic hash is stored, staff cannot look up or reset lost codes.
+          </span>
+        </label>
+      </div>
+
+      <!-- Submit Action Button -->
+      <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+        Submit Anonymous Complaint
+      </button>
+    </form>
+  </div>
+
+  <div style="text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--cb-gray-500);">
+    Have an existing tracking code? <a href="{{ url_for('public.track') }}" style="color: var(--cb-blue); font-weight: 600;">Track your case status here →</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Character counter for incident narrative
+  const narrativeEl = document.getElementById('narrative');
+  const charCountEl = document.getElementById('charCount');
+  if (narrativeEl && charCountEl) {
+    narrativeEl.addEventListener('input', () => {
+      const len = narrativeEl.value.length;
+      charCountEl.textContent = `${len} chars`;
+      if (len < 30) {
+        charCountEl.style.color = 'var(--cb-red)';
+      } else {
+        charCountEl.style.color = 'var(--cb-gray-600)';
+      }
+    });
+  }
+
+  // Prevent duplicate submits & show loading feedback
+  const form = document.getElementById('submitCaseForm');
+  const btn = document.getElementById('submitBtn');
+  if (form && btn) {
+    form.addEventListener('submit', () => {
+      btn.disabled = true;
+      btn.textContent = 'Submitting case securely...';
+    });
+  }
+</script>
+{% endblock %}

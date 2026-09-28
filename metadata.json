@@ -1,0 +1,6 @@
+{
+  "name": "CaseBridge",
+  "description": "A lightweight, privacy-focused web application for anonymous university case/complaint reporting and institutional case management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
