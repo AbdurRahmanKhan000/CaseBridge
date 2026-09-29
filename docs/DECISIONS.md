@@ -64,5 +64,14 @@
   - Enforce `.dockerignore` preventing leakage of `.env`, `.git`, test caches, or build artifacts into production images.
   - Retain private filesystem storage at `instance/protected_uploads` backed by persistent volumes.
 
+## ADR-009: Stage 10 Release-Candidate Audit and Production Baseline Stabilization
+- **Status:** Approved
+- **Decision:**
+  - Establish Release Candidate 1 (RC-1) as the production baseline. All functional requirements (FR-01 through FR-10) are validated with 61/61 automated tests passing.
+  - Freeze UI/UX, page loading performance, database schema, and public content.
+  - Document formal access control boundaries in `docs/ACCESS_CONTROL.md` and complete requirement traceability in `docs/MVP_RELEASE_AUDIT.md` using Mermaid diagrams.
+  - Defer non-critical enhancements (MFA, ClamAV scanning, distributed Redis rate limiting) to post-MVP roadmap.
+
+
 
 
