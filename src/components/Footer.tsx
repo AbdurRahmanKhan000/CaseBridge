@@ -1,5 +1,6 @@
 import React from 'react';
-import { Shield, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { Logo } from './ui/Logo';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -29,12 +30,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           
           {/* Brand & Brief Summary */}
           <div className="space-y-3 md:col-span-1">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                <Shield className="w-4 h-4" aria-hidden="true" />
-              </div>
-              <span className="text-base font-bold text-white tracking-tight">CaseBridge</span>
-            </div>
+            <button
+              onClick={() => onNavigate('/')}
+              className="text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-0.5"
+              aria-label="CaseBridge Home"
+            >
+              <Logo size="md" variant="light" />
+            </button>
             <p className="text-xs text-slate-400 leading-relaxed">
               Privacy-focused case and complaint management with secure tracking, controlled review, communication, and accountable case handling.
             </p>

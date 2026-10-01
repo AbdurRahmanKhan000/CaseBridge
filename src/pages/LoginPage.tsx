@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Shield, Lock, ArrowRight, CheckCircle2, Mail, RefreshCw, KeyRound, Loader2 } from 'lucide-react';
+import { Lock, ArrowRight, CheckCircle2, Mail, RefreshCw, KeyRound, Loader2 } from 'lucide-react';
 import { User } from '../types';
 import { store } from '../services/store';
 import { Button } from '../components/ui/Button';
 import { FormField, TextInput } from '../components/ui/FormField';
 import { Alert } from '../components/ui/Alert';
 import { Card } from '../components/ui/Card';
+import { Logo } from '../components/ui/Logo';
 
 interface LoginPageProps {
   onLoginSuccess: (user: User) => void;
@@ -134,16 +135,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 py-12 space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center mx-auto shadow-xs">
-          <Shield className="w-5 h-5" aria-hidden="true" />
+      <div className="text-center space-y-3">
+        <div className="flex justify-center">
+          <Logo size="lg" variant="dark" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Staff Portal
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          Authorized access for Ethics Review Committee members and administrators.
-        </p>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Staff Portal Access
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1">
+            Authorized sign-in for Ethics Review Committee members and administrators.
+          </p>
+        </div>
       </div>
 
       {/* Login Card */}

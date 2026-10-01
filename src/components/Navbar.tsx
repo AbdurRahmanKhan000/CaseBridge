@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Shield, Menu, X, ArrowRight, UserCircle, LogOut } from 'lucide-react';
+import { Menu, X, ArrowRight, UserCircle, LogOut } from 'lucide-react';
 import { User } from '../types';
 import { Button } from './ui/Button';
+import { Logo } from './ui/Logo';
 
 interface NavbarProps {
   currentPath: string;
@@ -42,15 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, current
           <div className="flex items-center gap-3">
             <button
               onClick={() => onNavigate('/')}
-              className="flex items-center gap-2.5 text-left group focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1 transition-colors"
+              className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1 transition-opacity hover:opacity-95"
               aria-label="CaseBridge Home"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs group-hover:bg-blue-700 transition-colors">
-                <Shield className="w-4 h-4" aria-hidden="true" />
-              </div>
-              <span className="text-lg font-bold tracking-tight text-slate-900">
-                CaseBridge
-              </span>
+              <Logo size="md" variant="dark" />
             </button>
           </div>
 
