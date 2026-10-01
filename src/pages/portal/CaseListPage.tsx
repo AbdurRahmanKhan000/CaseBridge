@@ -16,6 +16,10 @@ interface CaseListPageProps {
 export const CaseListPage: React.FC<CaseListPageProps> = ({ currentUser, onNavigate }) => {
   const cases = store.getCases();
   const categories = store.getCategories(false);
+  const isMember = currentUser.role === 'COMMITTEE_MEMBER';
+
+  // Case-level Access: Committee Members strictly see cases assigned to them
+  const baseCases = isMember ? cases.filter((c) => c.assignedToId === currentUser.id) : cases;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -24,7 +28,7 @@ export const CaseListPage: React.FC<CaseListPageProps> = ({ currentUser, onNavig
   const [onlyOverdue, setOnlyOverdue] = useState(false);
   const [assignmentFilter, setAssignmentFilter] = useState<'ALL' | 'ME' | 'UNASSIGNED'>('ALL');
 
-  const filteredCases = cases.filter((c) => {
+  const filteredCases = baseCases.filter((c) => {
     // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -46,9 +50,11 @@ export const CaseListPage: React.FC<CaseListPageProps> = ({ currentUser, onNavig
     // Overdue
     if (onlyOverdue && (!c.isOverdue || c.status === 'Resolved' || c.status === 'Closed')) return false;
 
-    // Assignment
-    if (assignmentFilter === 'ME' && c.assignedToId !== currentUser.id) return false;
-    if (assignmentFilter === 'UNASSIGNED' && c.assignedToId) return false;
+    // Assignment (for Lead and Admin)
+    if (!isMember) {
+      if (assignmentFilter === 'ME' && c.assignedToId !== currentUser.id) return false;
+      if (assignmentFilter === 'UNASSIGNED' && c.assignedToId) return false;
+    }
 
     return true;
   });
@@ -151,13 +157,20 @@ export const CaseListPage: React.FC<CaseListPageProps> = ({ currentUser, onNavig
             </label>
             <select
               id="filter-assignment"
-              value={assignmentFilter}
+              value={isMember ? 'ME' : assignmentFilter}
+              disabled={isMember}
               onChange={(e) => setAssignmentFilter(e.target.value as any)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:ring-2 focus:ring-blue-600"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:ring-2 focus:ring-blue-600 disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              <option value="ALL">All Assignments</option>
-              <option value="ME">Assigned to Me</option>
-              <option value="UNASSIGNED">Unassigned Only</option>
+              {isMember ? (
+                <option value="ME">Assigned to You ({baseCases.length})</option>
+              ) : (
+                <>
+                  <option value="ALL">All Assignments</option>
+                  <option value="ME">Assigned to Me</option>
+                  <option value="UNASSIGNED">Unassigned Only</option>
+                </>
+              )}
             </select>
           </div>
         </div>

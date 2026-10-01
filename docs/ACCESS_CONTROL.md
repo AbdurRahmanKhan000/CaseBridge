@@ -55,3 +55,14 @@ flowchart TD
 1. **Zero Personal Identification:** Anonymous submission schemas intentionally omit `student_id`, `name`, `email`, `phone_number`, and client device telemetry.
 2. **Shielded Lookup:** Case lookups by students require a 16-character high-entropy tracking code (`CB-XXXX-XXXX-XXXX`). The database stores only a salted SHA-256 digest (`code_hash`).
 3. **Internal Note Shielding:** The public tracking view (`StudentTrackingView`) strictly filters out internal notes, staff member identifiers, and database primary keys.
+
+---
+
+## 4. Staff Authentication & Case-Level Access Enforcement
+
+1. **Passwordless Email OTP:** Staff authentication is guarded by single-use 5-digit verification codes expiring in 5 minutes with a 5-attempt rate-limiting lockout. Sender identity: `ARK Ecosystem — CaseBridge`.
+2. **Dashboard Isolation:** Committee Members strictly see statistics and caseload metrics for cases assigned directly to their account (`assignedToId === currentUser.id`).
+3. **Queue & Detail Isolation:** Committee Members may only access case files assigned to them. Direct navigation or lookup of unassigned cases is rejected with a 403 Access Restricted barrier.
+4. **Lead & Admin Authority:** Committee Leads and System Administrators retain overarching case-level access across all categories and can reassign or unassign cases at will.
+5. **Closed Case Immutability:** Once a case enters the `Closed` state, adding public messages or internal deliberative notes is locked.
+

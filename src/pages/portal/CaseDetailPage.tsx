@@ -61,6 +61,29 @@ export const CaseDetailPage: React.FC<CaseDetailPageProps> = ({
     );
   }
 
+  // Authoritative case-level access check for staff members
+  const canAccess = store.canAccessCase(currentUser, currentCase);
+  if (!canAccess) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 animate-fade-in">
+        <Card className="p-8 text-center space-y-4 border-rose-200 bg-rose-50/30">
+          <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-2xs">
+            <Lock className="w-6 h-6" aria-hidden="true" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Access Restricted</h2>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+            This case record is not assigned to your staff profile. Under CaseBridge institutional policy, Committee Members may only access and review cases specifically assigned to their account.
+          </p>
+          <div className="pt-2">
+            <Button variant="primary" size="sm" onClick={() => onNavigate('/portal/cases')}>
+              Return to Assigned Queue
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   const showNotification = (msg: string) => {
     setActionSuccess(msg);
     setActionError(null);

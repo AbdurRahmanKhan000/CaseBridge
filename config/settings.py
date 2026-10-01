@@ -61,6 +61,15 @@ class Config:
     PHONE_NUMBER = os.getenv("PHONE_NUMBER", os.getenv("EMERGENCY_PHONE", "+92 42 99029216"))
     EMERGENCY_PHONE = PHONE_NUMBER
 
+    # SMTP Email Configuration (Passwordless Staff OTP Login & Escalations)
+    SMTP_HOST = os.getenv("SMTP_HOST", "")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+    SMTP_USER = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() in ("true", "1", "yes")
+    SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "ARK Ecosystem — CaseBridge")
+    SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", os.getenv("SUPPORT_EMAIL", "noreply@casebridge.ark"))
+
 
 class DevelopmentConfig(Config):
     """Development Environment Settings."""

@@ -17,6 +17,7 @@ from .attachment import CaseAttachment
 from .escalation import CaseEscalation, EscalationStatus
 from .notification import CaseNotification
 from .system_setting import SystemSetting
+from .login_otp import StaffLoginOtp
 
 __all__ = [
     "db",
@@ -39,4 +40,5 @@ __all__ = [
     "EscalationStatus",
     "CaseNotification",
     "SystemSetting",
+    "StaffLoginOtp",
 ]

@@ -24,6 +24,7 @@ from app.models import (
     CaseEscalation,
     CaseNotification,
     SystemSetting,
+    StaffLoginOtp,
 )
 from app.security import limiter, SensitiveDataFilter, hash_password, generate_tracking_code, hash_tracking_code
 from app.routes import public_bp, committee_bp, admin_bp, health_bp
@@ -174,36 +175,68 @@ def _seed_initial_data(app):
             db.session.bulk_save_objects(categories)
             db.session.commit()
 
-        # 3. Seed Safe Demo Accounts
+        # 3. Seed Approved Staff Accounts
         if User.query.first() is None:
             pw_hash = hash_password("password123")
-            demo_users = [
+            approved_staff = [
                 User(
-                    role_id=role_member.id,
-                    username="elena.vance",
-                    email="elena.vance@university.edu",
+                    role_id=role_admin.id,
+                    username="abdurrahman.khan",
+                    email="abdurrehman200khan@gmail.com",
                     password_hash=pw_hash,
-                    full_name="Dr. Elena Vance",
-                    department="Student Affairs & Welfare",
+                    full_name="Abdur Rahman Khan",
+                    department="Institutional Oversight IT",
                 ),
                 User(
                     role_id=role_lead.id,
-                    username="marcus.thorne",
-                    email="marcus.thorne@university.edu",
+                    username="eman.khan",
+                    email="bf25pwcs1458@uetpeshawar.edu.pk",
                     password_hash=pw_hash,
-                    full_name="Marcus Thorne, J.D.",
+                    full_name="Eman Khan",
                     department="Ethics & Compliance Office",
                 ),
                 User(
-                    role_id=role_admin.id,
-                    username="sarah.jenkins",
-                    email="sarah.jenkins@university.edu",
+                    role_id=role_member.id,
+                    username="misbah.ullah",
+                    email="Its.misbah.kx@gmail.com",
                     password_hash=pw_hash,
-                    full_name="Sarah Jenkins",
-                    department="Institutional Oversight IT",
+                    full_name="Misbah Ullah",
+                    department="Ethics Review Committee",
+                ),
+                User(
+                    role_id=role_member.id,
+                    username="salman.ahmad",
+                    email="csworking1122@gmail.com",
+                    password_hash=pw_hash,
+                    full_name="Salman Ahmad",
+                    department="Ethics Review Committee",
+                ),
+                User(
+                    role_id=role_member.id,
+                    username="maheen.ayaz",
+                    email="kgraana@gmail.com",
+                    password_hash=pw_hash,
+                    full_name="Maheen Ayaz",
+                    department="Ethics Review Committee",
+                ),
+                User(
+                    role_id=role_member.id,
+                    username="maryam.khan",
+                    email="maryampervaiz559@gmail.com",
+                    password_hash=pw_hash,
+                    full_name="Maryam Khan",
+                    department="Ethics Review Committee",
+                ),
+                User(
+                    role_id=role_member.id,
+                    username="urooj.khan",
+                    email="uroojkhanum.safi@gmail.com",
+                    password_hash=pw_hash,
+                    full_name="Urooj Khan",
+                    department="Ethics Review Committee",
                 ),
             ]
-            db.session.bulk_save_objects(demo_users)
+            db.session.bulk_save_objects(approved_staff)
             db.session.commit()
 
         # 4. Seed Safe Demo Cases

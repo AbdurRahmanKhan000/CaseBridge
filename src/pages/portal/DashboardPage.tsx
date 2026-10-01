@@ -14,15 +14,19 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ currentUser, onNavigate }) => {
   const cases = store.getCases();
+  const isMember = currentUser.role === 'COMMITTEE_MEMBER';
 
-  const totalCases = cases.length;
-  const inReviewCases = cases.filter((c) => c.status === 'In Review').length;
-  const actionRequiredCases = cases.filter((c) => c.status === 'Action Required').length;
-  const overdueCases = cases.filter(
+  // Dashboard Isolation: Committee Members strictly see statistics and caseload for their assigned cases
+  const accessibleCases = isMember ? cases.filter((c) => c.assignedToId === currentUser.id) : cases;
+
+  const totalCases = accessibleCases.length;
+  const inReviewCases = accessibleCases.filter((c) => c.status === 'In Review').length;
+  const actionRequiredCases = accessibleCases.filter((c) => c.status === 'Action Required').length;
+  const overdueCases = accessibleCases.filter(
     (c) => c.isOverdue && c.status !== 'Resolved' && c.status !== 'Closed'
   ).length;
-  const resolvedCases = cases.filter((c) => c.status === 'Resolved' || c.status === 'Closed').length;
-  const myAssignedCases = cases.filter(
+  const resolvedCases = accessibleCases.filter((c) => c.status === 'Resolved' || c.status === 'Closed').length;
+  const myAssignedCases = accessibleCases.filter(
     (c) => c.assignedToId === currentUser.id && c.status !== 'Closed' && c.status !== 'Resolved'
   );
 
@@ -161,32 +165,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ currentUser, onNav
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-slate-700" aria-hidden="true" />
-              <span>Recent Submissions ({cases.slice(0, 5).length})</span>
+              <span>{isMember ? 'Recent Assigned Cases' : 'Recent Submissions'} ({accessibleCases.slice(0, 5).length})</span>
             </h2>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('/portal/cases')}>
-              All Cases
+              {isMember ? 'My Cases' : 'All Cases'}
             </Button>
           </div>
 
-          <div className="space-y-2.5">
-            {cases.slice(0, 5).map((c) => (
-              <div
-                key={c.id}
-                onClick={() => onNavigate(`/portal/cases/${c.id}`)}
-                className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-white transition-all cursor-pointer space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-slate-800">{c.trackingCode}</span>
-                  <StatusBadge status={c.status} isOverdue={c.isOverdue} size="sm" />
+          {accessibleCases.length === 0 ? (
+            <p className="text-xs sm:text-sm text-slate-500 italic py-6 text-center">
+              No cases currently accessible under your staff profile.
+            </p>
+          ) : (
+            <div className="space-y-2.5">
+              {accessibleCases.slice(0, 5).map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => onNavigate(`/portal/cases/${c.id}`)}
+                  className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-white transition-all cursor-pointer space-y-1.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-slate-800">{c.trackingCode}</span>
+                    <StatusBadge status={c.status} isOverdue={c.isOverdue} size="sm" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-900 truncate">{c.subject}</h3>
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-0.5">
+                    <span>Assigned: <strong className="text-slate-700">{c.assignedToName || 'Unassigned'}</strong></span>
+                    <PriorityBadge priority={c.priority} size="sm" />
+                  </div>
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900 truncate">{c.subject}</h3>
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-0.5">
-                  <span>Assigned: <strong className="text-slate-700">{c.assignedToName || 'Unassigned'}</strong></span>
-                  <PriorityBadge priority={c.priority} size="sm" />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
 
       </div>

@@ -27,6 +27,17 @@ export interface User {
   lastLoginAt?: string;
 }
 
+export interface StaffLoginOtp {
+  id: string;
+  userId: string;
+  email: string;
+  code: string;
+  attempts: number;
+  isUsed: boolean;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export interface Category {
   id: string;
   name: string;
