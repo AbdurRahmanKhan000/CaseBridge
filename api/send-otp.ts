@@ -49,10 +49,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ success: false, error: 'Invalid 5-digit verification code payload.' });
   }
 
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const password = process.env.SMTP_PASSWORD;
-  const port = Number.parseInt(process.env.SMTP_PORT || '587', 10);
+  const host = process.env.SMTP_HOST?.trim();
+  const user = process.env.SMTP_USER?.trim();
+  const password = process.env.SMTP_PASSWORD?.trim();
+  const port = Number.parseInt(process.env.SMTP_PORT?.trim() || '587', 10);
 
   if (!host || !user || !password) {
     return res.status(503).json({
@@ -65,8 +65,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const safeName = escapeHtml(staffName);
-  const fromName = process.env.SMTP_FROM_NAME || 'ARK Ecosystem — CaseBridge';
-  const fromEmail = process.env.SMTP_FROM_EMAIL || user;
+  const fromName = process.env.SMTP_FROM_NAME?.trim() || 'ARK Ecosystem — CaseBridge';
+  // Gmail and most SMTP providers require the sender to match the authenticated account.
+  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || user;
   const transporter = nodemailer.createTransport({
     host,
     port,
