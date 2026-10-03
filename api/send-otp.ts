@@ -49,10 +49,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ success: false, error: 'Invalid 5-digit verification code payload.' });
   }
 
-  const host = process.env.SMTP_HOST?.trim();
-  const user = process.env.SMTP_USER?.trim();
-  const password = process.env.SMTP_PASSWORD?.trim();
-  const port = Number.parseInt(process.env.SMTP_PORT?.trim() || '587', 10);
+  const normalizeValue = (value: string | undefined) =>
+    value?.trim().replace(/^(["']).*\1$/, (quoted) => quoted.slice(1, -1).trim());
+  const host = normalizeValue(process.env.SMTP_HOST);
+  const user = normalizeValue(process.env.SMTP_USER)?.toLowerCase();
+  const passwordValue = normalizeValue(process.env.SMTP_PASSWORD);
+  const password = host?.toLowerCase() === 'smtp.gmail.com'
+    ? passwordValue?.replace(/\s+/g, '')
+    : passwordValue;
+  const port = Number.parseInt(normalizeValue(process.env.SMTP_PORT) || '587', 10);
 
   if (!host || !user || !password) {
     return res.status(503).json({
@@ -65,9 +70,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const safeName = escapeHtml(staffName);
-  const fromName = process.env.SMTP_FROM_NAME?.trim() || 'ARK Ecosystem — CaseBridge';
+  const fromName = normalizeValue(process.env.SMTP_FROM_NAME) || 'ARK Ecosystem — CaseBridge';
   // Gmail and most SMTP providers require the sender to match the authenticated account.
-  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || user;
+  const fromEmail = normalizeValue(process.env.SMTP_FROM_EMAIL)?.toLowerCase() || user;
+  if (fromEmail !== user) {
+    return res.status(503).json({
+      success: false,
+      error: 'SMTP_FROM_EMAIL must match SMTP_USER for this mail provider.',
+    });
+  }
   const transporter = nodemailer.createTransport({
     host,
     port,
@@ -88,8 +99,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     return res.status(200).json({ success: true, message: 'Verification code successfully dispatched to your email.' });
   } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : '';
     console.error('[Email Dispatch Error]', error instanceof Error ? error.name : 'UnknownError');
-    return res.status(502).json({ success: false, error: 'Email delivery failed. Verify the SMTP host, port, username, password, and sender settings.' });
+
+    if (message.includes('authentication') || message.includes('invalid login') || message.includes('535')) {
+      return res.status(502).json({
+        success: false,
+        error: 'SMTP authentication was rejected. For Gmail, use the SMTP_USER account and its Google App Password in SMTP_PASSWORD.',
+      });
+    }
+    if (message.includes('enotfound') || message.includes('getaddrinfo')) {
+      return res.status(502).json({ success: false, error: 'SMTP_HOST could not be resolved. Check the SMTP host name.' });
+    }
+    if (message.includes('timeout') || message.includes('econnrefused') || message.includes('connect')) {
+      return res.status(502).json({ success: false, error: 'The SMTP server could not be reached. Check SMTP_HOST and SMTP_PORT.' });
+    }
+    return res.status(502).json({ success: false, error: 'The SMTP provider rejected this email. Check the SMTP account and sender settings.' });
   }
 }
 
