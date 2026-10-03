@@ -20,7 +20,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
           About CaseBridge
         </h1>
         <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          CaseBridge is a privacy-focused case and complaint management platform designed to give people a clear, structured way to report concerns, follow case progress, and communicate with authorized reviewers.
+          CaseBridge is a privacy-focused case and complaint management platform designed to provide a clear, structured way to report concerns, track case progress, and communicate securely with authorized reviewers. It brings reporting, case tracking, communication, and accountability into one organized workflow.
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
       <Card className="space-y-3">
         <h2 className="text-lg font-bold text-slate-900 tracking-tight">Our Purpose</h2>
         <p className="text-sm text-slate-600 leading-relaxed">
-          CaseBridge is designed around a simple principle: a person should have a clear way to raise a concern without being forced into an unnecessarily complicated reporting process. The platform provides a structured path from submission to review, communication, resolution, and closure while applying privacy, access control, and accountability throughout the case lifecycle.
+          CaseBridge is built around a simple principle: reporting a concern should be clear, accessible, and respectful of privacy. The platform provides a structured path from initial submission to review, communication, resolution, and closure while applying controlled access, privacy-focused design, and accountability throughout the case lifecycle.
         </p>
       </Card>
 
@@ -40,7 +40,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
           </div>
           <h3 className="font-semibold text-sm text-slate-900">Private Reporting</h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Anonymous case submission is designed without requiring a name, student ID, phone number, or email address. A private tracking code gives the submitter a way to return to the case.
+            Submit a concern through a privacy-focused reporting process without unnecessarily exposing personal information. Each submission receives a private tracking code, allowing the reporter to return to the case and follow its progress without relying on a public identity.
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
           </div>
           <h3 className="font-semibold text-sm text-slate-900">Neutral Review</h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Cases are handled through an authorized review workflow, with role-based access, controlled case assignment, structured status changes, and communication between the submitter and permitted reviewers.
+            Cases move through a structured review workflow with role-based access and controlled case assignment. Authorized reviewers can manage case status, communicate with permitted participants, and handle cases according to defined responsibilities and access controls.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
           </div>
           <h3 className="font-semibold text-sm text-slate-900">Documented Outcomes</h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Important case actions are recorded through a structured timeline and audit trail, helping authorized reviewers maintain accountability from submission through resolution and closure.
+            Important case actions and status changes are recorded through a structured audit trail, supporting transparency and accountability throughout the case lifecycle. From submission and review to resolution and closure, CaseBridge keeps relevant activity organized and traceable for authorized reviewers.
           </p>
         </div>
       </div>
