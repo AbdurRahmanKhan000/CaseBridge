@@ -80,7 +80,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
 
         const mailData = await mailRes.json();
         if (!mailRes.ok || !mailData.success) {
-          setError(mailData?.error || 'Failed to dispatch email. Please verify SMTP settings and try again.');
+          const backendError = String(mailData?.error || 'Failed to dispatch email. Please verify SMTP settings and try again.');
+          const helpfulError = backendError.includes('Email delivery failed')
+            ? `${backendError} If you use Gmail, SMTP_USER and SMTP_FROM_EMAIL must be the same account and SMTP_PASSWORD must be a Google App Password.`
+            : backendError;
+          setError(helpfulError);
           setIsSending(false);
           return;
         }
