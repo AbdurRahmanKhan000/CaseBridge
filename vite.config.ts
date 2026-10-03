@@ -5,25 +5,24 @@ import { defineConfig, type Plugin } from 'vite';
 import nodemailer, { type Transporter } from 'nodemailer';
 
 function getTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const password = process.env.SMTP_PASSWORD;
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = port === 465;
+
+  if (!host || !user || !password) {
+    throw new Error('Email delivery is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD.');
+  }
 
   return nodemailer.createTransport({
     host,
     port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER || 'abdurrehman200khan@gmail.com',
-      pass: process.env.SMTP_PASSWORD,
-    },
+    secure: port === 465,
+    auth: { user, pass: password },
     pool: false,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
-    tls: {
-      rejectUnauthorized: false,
-    },
   });
 }
 
