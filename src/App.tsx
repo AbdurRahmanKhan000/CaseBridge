@@ -22,6 +22,7 @@ import { AdminAuditPage } from './pages/portal/AdminAuditPage';
 import { ErrorView } from './pages/ErrorPages';
 import { store } from './services/store';
 import { User } from './types';
+import { StaffPortalGate } from './components/StaffPortalGate';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -32,6 +33,7 @@ export default function App() {
   });
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => store.getCurrentUser());
+  const [isPortalUnlocked, setIsPortalUnlocked] = useState(false);
   const categories = store.getCategories(true);
 
   // Sync with browser history
@@ -60,6 +62,7 @@ export default function App() {
   const handleLogout = () => {
     store.logoutUser();
     setCurrentUser(null);
+    setIsPortalUnlocked(false);
     navigate('/');
   };
 
@@ -67,6 +70,10 @@ export default function App() {
   const renderRoute = () => {
     // 1. Staff Portal Routes
     if (currentPath.startsWith('/portal')) {
+      if (!isPortalUnlocked) {
+        return <StaffPortalGate onUnlock={() => setIsPortalUnlocked(true)} />;
+      }
+
       if (!currentUser) {
         return <LoginPage onLoginSuccess={handleLoginSuccess} onNavigate={navigate} />;
       }
@@ -251,6 +258,9 @@ export default function App() {
     }
 
     if (currentPath === '/login') {
+      if (!isPortalUnlocked) {
+        return <StaffPortalGate onUnlock={() => setIsPortalUnlocked(true)} />;
+      }
       return <LoginPage onLoginSuccess={handleLoginSuccess} onNavigate={navigate} />;
     }
 
