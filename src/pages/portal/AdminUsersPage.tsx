@@ -46,9 +46,13 @@ export const AdminUsersPage: React.FC<AdminUsersPageProps> = ({ currentUser }) =
     refreshUsers();
   };
 
-  const handleChangeRole = (userId: string, role: UserRole) => {
-    store.updateUser(userId, { role });
-    setMessage(`Role updated successfully.`);
+  const handleChangeRole = async (userId: string, role: UserRole) => {
+    const updatedUser = await store.updateUserInDatabase(userId, { role });
+    if (!updatedUser) {
+      setMessage('Role update could not be saved to shared storage.');
+      return;
+    }
+    setMessage('Role updated across CaseBridge.');
     refreshUsers();
   };
 
