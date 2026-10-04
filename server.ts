@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import pg from 'pg';
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ const app = express();
 // Therefore, the Node app must always listen on DEFAULT_APP_PORT or 3000.
 const PORT = parseInt(process.env.DEFAULT_APP_PORT || process.env.APP_PORT || '3000', 10);
 const isProd = process.env.NODE_ENV === 'production' || process.env.PUBLISHED === 'true';
+const { Pool } = pg;
+const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+const dbPool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 5, ssl: { rejectUnauthorized: false } }) : null;
 
 app.use(express.json());
 
@@ -56,6 +60,46 @@ function createDirectTransporter() {
     },
   });
 }
+
+// Shared staff role endpoints. These keep role changes consistent across browsers and deployments.
+app.get('/api/staff/users', async (_req, res) => {
+  if (!dbPool) return res.status(503).json({ error: 'Shared database is not configured.' });
+  try {
+    const result = await dbPool.query('SELECT id, email, full_name AS "fullName", role, department, is_active AS "isActive", created_at AS "createdAt", last_login_at AS "lastLoginAt" FROM casebridge_staff_users ORDER BY created_at DESC');
+    return res.json(result.rows);
+  } catch (error) {
+    console.error('[v0] Failed to load shared staff users:', error);
+    return res.status(500).json({ error: 'Unable to load shared staff users.' });
+  }
+});
+
+app.post('/api/staff/users/sync', async (req, res) => {
+  if (!dbPool) return res.status(503).json({ error: 'Shared database is not configured.' });
+  const users = Array.isArray(req.body?.users) ? req.body.users : [];
+  try {
+    for (const user of users) {
+      await dbPool.query(`INSERT INTO casebridge_staff_users (id, email, full_name, role, department, is_active, created_at, last_login_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING`, [user.id, user.email, user.fullName, user.role, user.department, user.isActive, user.createdAt, user.lastLoginAt || null]);
+    }
+    return res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('[v0] Failed to seed shared staff users:', error);
+    return res.status(500).json({ error: 'Unable to initialize shared staff users.' });
+  }
+});
+
+app.patch('/api/staff/users/:id', async (req, res) => {
+  if (!dbPool) return res.status(503).json({ error: 'Shared database is not configured.' });
+  const { role, isActive } = req.body || {};
+  if (role === undefined && isActive === undefined) return res.status(400).json({ error: 'No user changes supplied.' });
+  try {
+    const result = await dbPool.query('UPDATE casebridge_staff_users SET role = COALESCE($1, role), is_active = COALESCE($2, is_active), updated_at = now() WHERE id = $3 RETURNING id, email, full_name AS "fullName", role, department, is_active AS "isActive", created_at AS "createdAt", last_login_at AS "lastLoginAt"', [role ?? null, isActive ?? null, req.params.id]);
+    if (!result.rowCount) return res.status(404).json({ error: 'Staff user not found.' });
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[v0] Failed to update shared staff user:', error);
+    return res.status(500).json({ error: 'Unable to update shared staff user.' });
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, type Plugin } from 'vite';
 import nodemailer, { type Transporter } from 'nodemailer';
+import pg from 'pg';
 
 function getTransporter() {
   const host = process.env.SMTP_HOST;
@@ -24,6 +25,42 @@ function getTransporter() {
     greetingTimeout: 10000,
     socketTimeout: 15000,
   });
+}
+
+function sharedStaffPlugin(): Plugin {
+  const { Pool } = pg;
+  const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+  const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 5, ssl: { rejectUnauthorized: false } }) : null;
+  return {
+    name: 'shared-staff-plugin',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/staff/users')) return next();
+        if (!pool) { res.statusCode = 503; res.end(JSON.stringify({ error: 'Shared database is not configured.' })); return; }
+        try {
+          if (req.method === 'GET' && req.url === '/api/staff/users') {
+            const result = await pool.query('SELECT id, email, full_name AS "fullName", role, department, is_active AS "isActive", created_at AS "createdAt", last_login_at AS "lastLoginAt" FROM casebridge_staff_users ORDER BY created_at DESC');
+            res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(result.rows)); return;
+          }
+          const requestUrl = req.url;
+          let body = ''; req.on('data', chunk => { body += chunk; });
+          req.on('end', async () => {
+            const data = JSON.parse(body || '{}');
+            if (req.method === 'POST' && requestUrl === '/api/staff/users/sync') {
+              for (const user of data.users || []) await pool.query('INSERT INTO casebridge_staff_users (id, email, full_name, role, department, is_active, created_at, last_login_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING', [user.id, user.email, user.fullName, user.role, user.department, user.isActive, user.createdAt, user.lastLoginAt || null]);
+              res.statusCode = 201; res.end(JSON.stringify({ success: true })); return;
+            }
+            if (req.method === 'PATCH' && requestUrl?.startsWith('/api/staff/users/')) {
+              const id = decodeURIComponent(requestUrl.split('/').pop() || '');
+              const result = await pool.query('UPDATE casebridge_staff_users SET role = COALESCE($1, role), is_active = COALESCE($2, is_active), updated_at = now() WHERE id = $3 RETURNING id, email, full_name AS "fullName", role, department, is_active AS "isActive", created_at AS "createdAt", last_login_at AS "lastLoginAt"', [data.role ?? null, data.isActive ?? null, id]);
+              res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(result.rows[0] || null)); return;
+            }
+            next();
+          });
+        } catch (error) { console.error('[v0] Preview staff API failed:', error); res.statusCode = 500; res.end(JSON.stringify({ error: 'Shared staff API failed.' })); }
+      });
+    },
+  };
 }
 
 function otpMailPlugin(): Plugin {
@@ -125,7 +162,7 @@ function otpMailPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), otpMailPlugin()],
+    plugins: [react(), tailwindcss(), sharedStaffPlugin(), otpMailPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

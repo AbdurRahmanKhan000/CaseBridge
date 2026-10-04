@@ -734,8 +734,40 @@ class StoreService {
     return newUser;
   }
 
+  public async syncUsersFromDatabase(): Promise<User[]> {
+  try {
+  await fetch('/api/staff/users/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users: this.users }) });
+  const response = await fetch('/api/staff/users');
+  if (!response.ok) return this.getUsers();
+  const sharedUsers = await response.json() as User[];
+  if (sharedUsers.length) {
+  this.users = sharedUsers;
+  this.saveState();
+  }
+  return this.getUsers();
+  } catch (error) {
+  console.error('[v0] Shared staff sync failed:', error);
+  return this.getUsers();
+  }
+  }
+
+  public async updateUserInDatabase(id: string, updates: Partial<User>): Promise<User | null> {
+  try {
+  const response = await fetch(`/api/staff/users/${encodeURIComponent(id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+  if (!response.ok) return null;
+  const updatedUser = await response.json() as User;
+  const localUser = this.users.find(u => u.id === id);
+  if (localUser) Object.assign(localUser, updatedUser);
+  this.saveState();
+  return localUser || updatedUser;
+  } catch (error) {
+  console.error('[v0] Shared staff update failed:', error);
+  return null;
+  }
+  }
+
   public updateUser(id: string, updates: Partial<User>): User | null {
-    const user = this.users.find(u => u.id === id);
+  const user = this.users.find(u => u.id === id);
     if (!user) return null;
     Object.assign(user, updates);
     this.saveState();

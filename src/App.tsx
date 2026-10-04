@@ -38,6 +38,9 @@ export default function App() {
 
   // Sync with browser history
   useEffect(() => {
+    store.syncUsersFromDatabase().then(() => {
+      setCurrentUser(store.getCurrentUser());
+    });
     const handlePopState = () => {
       setCurrentPath(window.location.pathname || '/');
       setCurrentUser(store.getCurrentUser());
